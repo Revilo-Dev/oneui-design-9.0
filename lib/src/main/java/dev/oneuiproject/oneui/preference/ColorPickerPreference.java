@@ -10,6 +10,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.SystemClock;
 import android.util.AttributeSet;
+import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.picker3.app.SeslColorPickerDialog;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 
 import dev.oneuiproject.oneui.design.R;
+import dev.oneuiproject.oneui.widget.DialogBlur;
 
 public class ColorPickerPreference extends Preference implements Preference.OnPreferenceClickListener,
         SeslColorPickerDialog.OnColorSetListener {
@@ -133,6 +135,17 @@ public class ColorPickerPreference extends Preference implements Preference.OnPr
             dialog.onRestoreInstanceState(state);
         }
         dialog.show();
+        DialogBlur.apply(dialog);
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().getDecorView().addOnAttachStateChangeListener(
+                    new View.OnAttachStateChangeListener() {
+                        @Override public void onViewAttachedToWindow(View view) { }
+                        @Override public void onViewDetachedFromWindow(View view) {
+                            DialogBlur.release(dialog);
+                            view.removeOnAttachStateChangeListener(this);
+                        }
+                    });
+        }
 
         mDialog = dialog;
     }

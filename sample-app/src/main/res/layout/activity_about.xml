@@ -10,14 +10,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:seslUseCustomHeight="true"
-        app:seslHeightProportion="0.5">
+        app:seslHeightProportion="0.5"
+        app:layout_behavior="dev.oneuiproject.oneui.widget.FlowHeaderBehavior">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:id="@+id/about_ctl"
             style="?attr/collapsingToolbarLayoutStyle"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_scrollFlags="exitUntilCollapsed|scroll">
+            app:layout_scrollFlags="exitUntilCollapsed|scroll|snap">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -135,8 +136,16 @@
 
         </RelativeLayout>
 
-        <include android:id="@+id/about_bottom_content"
-            layout="@layout/activity_about_content" />
+        <dev.oneuiproject.oneui.widget.ProgressiveBlurLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            app:blurHeight="56dp">
+
+            <include android:id="@+id/about_bottom_content"
+                layout="@layout/activity_about_content" />
+
+        </dev.oneuiproject.oneui.widget.ProgressiveBlurLayout>
 
     </LinearLayout>
 

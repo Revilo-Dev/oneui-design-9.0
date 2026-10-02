@@ -2,6 +2,8 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="OneUITheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="alertDialogTheme">@style/OneUIGlassDialogTheme</item>
+        <item name="android:alertDialogTheme">@style/OneUIGlassDialogTheme</item>
         <item name="android:listChoiceBackgroundIndicator">?attr/listChoiceBackgroundIndicator</item>
 
         <item name="android:statusBarColor">@color/sesl_round_and_bgcolor_light</item>

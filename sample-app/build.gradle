@@ -9,7 +9,8 @@ configurations.all {
 }
 
 android {
-    compileSdk target_sdk
+    namespace 'com.sec.sesl.tester'
+    compileSdk compile_sdk
 
     defaultConfig {
         // Use Samsung internal package name to enable theming.

@@ -5,6 +5,12 @@
     tools:ignore="AppCompatResource">
 
     <item
+        android:id="@+id/menu_search_pages"
+        android:icon="@drawable/sample_nav_search"
+        android:title="Search pages"
+        app:showAsAction="ifRoom" />
+
+    <item
         android:id="@+id/menu_apppicker_system"
         android:title="Show system apps"
         android:visible="false"

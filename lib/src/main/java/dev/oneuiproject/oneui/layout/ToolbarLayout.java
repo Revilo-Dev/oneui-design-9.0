@@ -8,10 +8,11 @@ import android.content.res.Configuration;
 import android.content.res.TypedArray;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.graphics.Color;
 import android.os.Build;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.util.TypedValue;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,10 +34,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.view.menu.ActionMenuItemView;
 import androidx.appcompat.widget.ActionMenuView;
 import androidx.appcompat.widget.AppCompatCheckBox;
-import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
@@ -46,9 +47,12 @@ import com.google.android.material.navigation.NavigationBarView;
 import dev.oneuiproject.oneui.design.R;
 import dev.oneuiproject.oneui.utils.internal.ToolbarLayoutUtils;
 import dev.oneuiproject.oneui.view.internal.NavigationBadgeIcon;
+import dev.oneuiproject.oneui.widget.FloatingSearchBar;
+import dev.oneuiproject.oneui.widget.ScrollEdgeFades;
+import dev.oneuiproject.oneui.widget.StickyToolbarControls;
 
 /**
- * Custom collapsing Appbar like in any App from Samsung. Includes a {@link SearchView} and Samsung's ActionMode.
+ * Collapsing app bar with pinned actions, floating search, and action mode.
  */
 public class ToolbarLayout extends LinearLayout {
     private static final String TAG = "ToolbarLayout";
@@ -99,14 +103,19 @@ public class ToolbarLayout extends LinearLayout {
     private AppBarLayout mAppBarLayout;
     private CollapsingToolbarLayout mCollapsingToolbarLayout;
     private Toolbar mMainToolbar;
-    private Toolbar mSearchToolbar;
     private Toolbar mActionModeToolbar;
     private CoordinatorLayout mCoordinatorLayout;
     protected FrameLayout mMainContainer;
     private FrameLayout mFooterContainer;
+    private FrameLayout mStickyBottomHost;
+    private FloatingSearchBar mFloatingSearchBar;
+    private StickyToolbarControls mStickyControls;
+    private StickyToolbarControls mActionModeStickyControls;
+    private boolean mStickyTitleEnabled;
+    private boolean mStickyActionsEnabled = true;
+    private boolean mStickyActionBlurEnabled = true;
     private BottomNavigationView mBottomActionModeBar;
 
-    private SearchView mSearchView;
     private LinearLayout mActionModeSelectAll;
     private AppCompatCheckBox mActionModeCheckBox;
     private TextView mActionModeTitleTextView;
@@ -117,8 +126,7 @@ public class ToolbarLayout extends LinearLayout {
     private boolean mIsActionMode = false;
 
     /**
-     * Callback for the Toolbar's SearchMode.
-     * Notification that the {@link SearchView}'s text has been edited or it's visibility changed.
+     * Callback for the floating search bar.
      *
      * @see #showSearchMode()
      * @see #dismissSearchMode()
@@ -128,7 +136,7 @@ public class ToolbarLayout extends LinearLayout {
 
         boolean onQueryTextChange(String newText);
 
-        void onSearchModeToggle(SearchView searchView, boolean visible);
+        void onSearchModeToggle(FloatingSearchBar searchBar, boolean visible);
     }
 
     public ToolbarLayout(@NonNull Context context, @Nullable AttributeSet attrs) {
@@ -137,16 +145,6 @@ public class ToolbarLayout extends LinearLayout {
         mContext = context;
 
         setOrientation(VERTICAL);
-
-        //App windowBackground is enough
-        /*TypedValue bgColor = new TypedValue();
-        context.getTheme()
-                .resolveAttribute(android.R.attr.windowBackground, bgColor, true);
-        if (bgColor.resourceId > 0) {
-            setBackgroundColor(mContext.getColor(bgColor.resourceId));
-        } else {
-            setBackgroundColor(bgColor.data);
-        }*/
 
         initLayoutAttrs(attrs);
         inflateChildren();
@@ -173,6 +171,9 @@ public class ToolbarLayout extends LinearLayout {
             mTitleExpanded
                     = mTitleCollapsed = a.getString(R.styleable.ToolbarLayout_title);
             mSubtitleExpanded = a.getString(R.styleable.ToolbarLayout_subtitle);
+            mStickyTitleEnabled = a.getBoolean(R.styleable.ToolbarLayout_stickyTitleEnabled, false);
+            mStickyActionsEnabled = a.getBoolean(R.styleable.ToolbarLayout_stickyActionsEnabled, true);
+            mStickyActionBlurEnabled = a.getBoolean(R.styleable.ToolbarLayout_stickyActionBlurEnabled, true);
         } finally {
             a.recycle();
         }
@@ -194,10 +195,8 @@ public class ToolbarLayout extends LinearLayout {
         mAppBarLayout = mCoordinatorLayout.findViewById(R.id.toolbarlayout_app_bar);
         mCollapsingToolbarLayout = mAppBarLayout.findViewById(R.id.toolbarlayout_collapsing_toolbar);
         mMainToolbar = mCollapsingToolbarLayout.findViewById(R.id.toolbarlayout_main_toolbar);
-        mSearchToolbar = mCollapsingToolbarLayout.findViewById(R.id.toolbarlayout_search_toolbar);
         mActionModeToolbar = mCollapsingToolbarLayout.findViewById(R.id.toolbarlayout_action_mode_toolbar);
 
-        mSearchView = mSearchToolbar.findViewById(R.id.toolbarlayout_search_view);
         mActionModeSelectAll = mActionModeToolbar.findViewById(R.id.toolbarlayout_selectall);
         mActionModeCheckBox = mActionModeSelectAll.findViewById(R.id.toolbarlayout_selectall_checkbox);
         mActionModeTitleTextView = mActionModeToolbar.findViewById(R.id.toolbar_layout_action_mode_title);
@@ -207,6 +206,59 @@ public class ToolbarLayout extends LinearLayout {
 
         mMainContainer = findViewById(R.id.toolbarlayout_main_container);
         mFooterContainer = findViewById(R.id.toolbarlayout_footer_container);
+        mStickyBottomHost = findViewById(R.id.toolbarlayout_sticky_bottom_host);
+        mFloatingSearchBar = new FloatingSearchBar(mContext);
+        CoordinatorLayout.LayoutParams searchParams = new CoordinatorLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, dp(56));
+        searchParams.gravity = android.view.Gravity.BOTTOM;
+        searchParams.leftMargin = searchParams.rightMargin = dp(16);
+        searchParams.bottomMargin = dp(16);
+        mCoordinatorLayout.addView(mFloatingSearchBar, searchParams);
+        mFloatingSearchBar.setSourceView(mMainContainer);
+        mFloatingSearchBar.setOnCloseRequested(this::dismissSearchMode);
+        mFloatingSearchBar.setListener(new FloatingSearchBar.Listener() {
+            @Override public void onQueryChanged(String query) {
+                if (mSearchModeListener != null) mSearchModeListener.onQueryTextChange(query);
+            }
+            @Override public void onQuerySubmitted(String query) {
+                if (mSearchModeListener != null) mSearchModeListener.onQueryTextSubmit(query);
+            }
+            @Override public void onVisibilityChanged(boolean visible) {
+                if (visible && mIsActionMode) dismissActionMode();
+                mIsSearchMode = visible;
+                mOnBackPressedCallback.setEnabled(visible || mIsActionMode);
+                if (!mIsActionMode) mFooterContainer.setVisibility(visible ? GONE : VISIBLE);
+                mStickyBottomHost.setVisibility(visible ? GONE : VISIBLE);
+                if (mSearchModeListener != null)
+                    mSearchModeListener.onSearchModeToggle(mFloatingSearchBar, visible);
+            }
+        });
+        ViewCompat.setOnApplyWindowInsetsListener(mCoordinatorLayout, (view, insets) -> {
+            int bottom = Math.max(insets.getInsets(WindowInsetsCompat.Type.ime()).bottom,
+                    insets.getInsets(WindowInsetsCompat.Type.systemBars()).bottom);
+            CoordinatorLayout.LayoutParams lp = (CoordinatorLayout.LayoutParams)
+                    mFloatingSearchBar.getLayoutParams();
+            int margin = dp(16) + bottom;
+            if (lp.bottomMargin != margin) {
+                lp.bottomMargin = margin;
+                mFloatingSearchBar.setLayoutParams(lp);
+            }
+            return insets;
+        });
+        mMainContainer.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            ScrollEdgeFades.attachTree(mMainContainer);
+        });
+        mCollapsingToolbarLayout.setContentScrimColor(Color.TRANSPARENT);
+        mCollapsingToolbarLayout.setCollapsedTitleTextColor(Color.TRANSPARENT);
+        mStickyControls = new StickyToolbarControls(mAppBarLayout, mMainToolbar, mMainContainer);
+        mStickyControls.setEnabled(mStickyActionsEnabled);
+        mStickyControls.setBlurEnabled(mStickyActionBlurEnabled);
+        mActionModeStickyControls = new StickyToolbarControls(
+                mAppBarLayout, mActionModeToolbar, mMainContainer);
+        mActionModeStickyControls.setEnabled(mStickyActionsEnabled);
+        mActionModeStickyControls.setBlurEnabled(mStickyActionBlurEnabled);
+        mAppBarLayout.addOnOffsetChangedListener((bar, offset) -> updateStickyTitle());
+        mMainContainer.getViewTreeObserver().addOnScrollChangedListener(this::updateStickyTitle);
         mBottomActionModeBar = findViewById(R.id.toolbarlayout_bottom_nav_view);
 
         if (!isInEditMode()) {
@@ -216,13 +268,7 @@ public class ToolbarLayout extends LinearLayout {
             mActivity.getSupportActionBar()
                     .setDisplayShowTitleEnabled(false);
 
-            mSearchView.setSearchableInfo(
-                    ((SearchManager) mContext.getSystemService(Context.SEARCH_SERVICE))
-                            .getSearchableInfo(mActivity.getComponentName()));
         }
-
-        mSearchView.seslSetUpButtonVisibility(View.VISIBLE);
-        mSearchView.seslSetOnUpButtonClickListener(v -> dismissSearchMode());
 
         setNavigationButtonIcon(mNavigationIcon);
         setTitle(mTitleExpanded, mTitleCollapsed);
@@ -342,6 +388,74 @@ public class ToolbarLayout extends LinearLayout {
         return mAppBarLayout;
     }
 
+    /** Controls whether the pinned toolbar gains glass action surfaces over scrolled content. */
+    public void setStickyActionsEnabled(boolean enabled) {
+        mStickyActionsEnabled = enabled;
+        if (mStickyControls != null) mStickyControls.setEnabled(enabled);
+        if (mActionModeStickyControls != null) mActionModeStickyControls.setEnabled(enabled);
+    }
+
+    public void setStickyActionBlurEnabled(boolean enabled) {
+        mStickyActionBlurEnabled = enabled;
+        if (mStickyControls != null) mStickyControls.setBlurEnabled(enabled);
+        if (mActionModeStickyControls != null) mActionModeStickyControls.setBlurEnabled(enabled);
+    }
+
+    public void setStickyActionShadowElevation(float pixels) {
+        if (mStickyControls != null) mStickyControls.setShadowElevation(pixels);
+        if (mActionModeStickyControls != null)
+            mActionModeStickyControls.setShadowElevation(pixels);
+    }
+
+    public void setStickyActionTintColor(@Nullable Integer color) {
+        if (mStickyControls != null) mStickyControls.setTintColor(color);
+        if (mActionModeStickyControls != null) mActionModeStickyControls.setTintColor(color);
+    }
+
+    /** Direct access lets screens add, remove, and configure any toolbar action. */
+    public FloatingSearchBar getFloatingSearchBar() { return mFloatingSearchBar; }
+
+    @Nullable
+    public StickyToolbarControls getStickyToolbarControls() { return mStickyControls; }
+
+    @Nullable
+    public StickyToolbarControls getActionModeStickyControls() {
+        return mActionModeStickyControls;
+    }
+
+    /** Keeps the compact title pinned with the actions. Disabled by default. */
+    public void setStickyTitleEnabled(boolean enabled) {
+        mStickyTitleEnabled = enabled;
+        updateStickyTitle();
+    }
+
+    public boolean isStickyTitleEnabled() { return mStickyTitleEnabled; }
+
+    private void updateStickyTitle() {
+        if (mMainToolbar == null || mCollapsingToolbarLayout == null) return;
+        boolean show = mAppBarLayout.seslIsCollapsed()
+                && (mStickyTitleEnabled || mStickyControls == null
+                        || !mStickyControls.isContentScrolled());
+        CharSequence title = show ? mTitleCollapsed : null;
+        CharSequence subtitle = show ? mSubtitleCollapsed : null;
+        if (!TextUtils.equals(mMainToolbar.getTitle(), title)) mMainToolbar.setTitle(title);
+        if (!TextUtils.equals(mMainToolbar.getSubtitle(), subtitle)) mMainToolbar.setSubtitle(subtitle);
+    }
+
+    /** Keeps a bottom bar at the viewport edge while the app bar and page scroll. */
+    public void setStickyBottomBar(@Nullable View bar) {
+        if (mStickyBottomHost == null) return;
+        mStickyBottomHost.removeAllViews();
+        if (bar == null) return;
+        ViewGroup parent = (ViewGroup) bar.getParent();
+        if (parent != null) parent.removeView(bar);
+        mStickyBottomHost.addView(bar);
+    }
+
+    private int dp(float value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
+    }
+
     /**
      * Returns the {@link Toolbar}.
      */
@@ -364,8 +478,9 @@ public class ToolbarLayout extends LinearLayout {
      */
     public void setTitle(@Nullable CharSequence expandedTitle,
                          @Nullable CharSequence collapsedTitle) {
-        mMainToolbar.setTitle(mTitleCollapsed = collapsedTitle);
+        mTitleCollapsed = collapsedTitle;
         mCollapsingToolbarLayout.setTitle(mTitleExpanded = expandedTitle);
+        updateStickyTitle();
     }
 
     /**
@@ -380,7 +495,8 @@ public class ToolbarLayout extends LinearLayout {
      * Set the subtitle of the collapsed Toolbar.
      */
     public void setCollapsedSubtitle(@Nullable CharSequence collapsedSubtitle) {
-        mMainToolbar.setSubtitle(mSubtitleCollapsed = collapsedSubtitle);
+        mSubtitleCollapsed = collapsedSubtitle;
+        updateStickyTitle();
 
     }
 
@@ -658,76 +774,32 @@ public class ToolbarLayout extends LinearLayout {
     //
 
     /**
-     * Show the {@link SearchView} in the Toolbar.
-     * To enable the voice input icon in the SearchView, please refer to the project wiki.
-     * TODO: link to the wiki on how to use the voice input feature.
+     * Show floating search above the navigation bar or keyboard.
      */
     public void showSearchMode() {
-        mIsSearchMode = true;
-        if (mIsActionMode) dismissActionMode();
-        mOnBackPressedCallback.setEnabled(true);
-        animatedVisibility(mMainToolbar, GONE);
-        animatedVisibility(mSearchToolbar, VISIBLE);
-        mFooterContainer.setVisibility(GONE);
+        showSearchMode("");
+    }
 
-        mCollapsingToolbarLayout.setTitle(getResources()
-                .getString(R.string.sesl_searchview_description_search));
-        mCollapsingToolbarLayout.seslSetSubtitle(null);
-        setExpanded(false, true);
-
-        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-                if (mSearchModeListener != null)
-                    return mSearchModeListener.onQueryTextSubmit(query);
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                if (mSearchModeListener != null)
-                    return mSearchModeListener.onQueryTextChange(newText);
-                return false;
-            }
-        });
-        mSearchView.setIconified(false);
-
-        if (mSearchModeListener != null)
-            mSearchModeListener.onSearchModeToggle(mSearchView, true);
+    public void showSearchMode(@Nullable CharSequence initialQuery) {
+        if (mIsSearchMode) return;
+        mFloatingSearchBar.open(initialQuery);
     }
 
     /**
-     * Dismiss the {@link SearchView} in the Toolbar.
+     * Dismiss floating search and clear its active query.
      *
      * @see #showSearchMode()
      */
     public void dismissSearchMode() {
-        if (mSearchModeListener != null)
-            mSearchModeListener.onSearchModeToggle(mSearchView, false);
-        mIsSearchMode = false;
-        mOnBackPressedCallback.setEnabled(false);
-        mSearchView.setQuery("", false);
-        animatedVisibility(mSearchToolbar, GONE);
-        animatedVisibility(mMainToolbar, VISIBLE);
-        mFooterContainer.setVisibility(VISIBLE);
-
-        setTitle(mTitleExpanded, mTitleCollapsed);
-        mCollapsingToolbarLayout.seslSetSubtitle(mSubtitleExpanded);
+        if (!mIsSearchMode) return;
+        mFloatingSearchBar.close();
     }
 
     /**
-     * Check if SearchMode is enabled(=the {@link SearchView} in the Toolbar is visible).
+     * Check whether floating search is open.
      */
     public boolean isSearchMode() {
         return mIsSearchMode;
-    }
-
-    /**
-     * Returns the {@link SearchView} of the Toolbar.
-     */
-    @NonNull
-    public SearchView getSearchView() {
-        return mSearchView;
     }
 
     /**
@@ -738,12 +810,11 @@ public class ToolbarLayout extends LinearLayout {
     }
 
     /**
-     * Forward the voice input result to the Toolbar.
-     * TODO: link to the wiki on how to use the voice input feature.
+     * Forward a voice input result to the floating search field.
      */
     public void onSearchModeVoiceInputResult(Intent intent) {
         if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
-            mSearchView.setQuery(intent.getStringExtra(SearchManager.QUERY), true);
+            mFloatingSearchBar.setQuery(intent.getStringExtra(SearchManager.QUERY), true);
         }
     }
 
@@ -833,7 +904,7 @@ public class ToolbarLayout extends LinearLayout {
         setTitle(mTitleExpanded, mTitleCollapsed);
         mAppBarLayout.removeOnOffsetChangedListener(mActionModeTitleFadeListener);
         mCollapsingToolbarLayout.seslSetSubtitle(mSubtitleExpanded);
-        mMainToolbar.setSubtitle(mSubtitleCollapsed);
+        updateStickyTitle();
         setActionModeAllSelector(0,  true,  false);
         if (mActionModeCallback != null) {
             mActionModeCallback.onDismiss(this);

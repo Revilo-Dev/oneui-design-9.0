@@ -40,6 +40,8 @@ import java.util.Locale;
 
 import dev.oneuiproject.oneui.design.R;
 import dev.oneuiproject.oneui.utils.ViewUtils;
+import dev.oneuiproject.oneui.widget.GlassSurfaceView;
+import dev.oneuiproject.oneui.widget.ScrollEdgeFades;
 
 /**
  * Custom DrawerLayout extending {@link ToolbarLayout}. Looks and behaves the same as the one in Apps from Samsung.
@@ -74,7 +76,8 @@ public class DrawerLayout extends ToolbarLayout {
 
     private androidx.drawerlayout.widget.DrawerLayout mDrawer;
     private LinearLayout mToolbarContent;
-    private LinearLayout mDrawerContent;
+    private FrameLayout mDrawerContent;
+    private LinearLayout mDrawerItems;
     private View mHeaderView;
     private AppCompatImageButton mHeaderButton;
     private TextView mHeaderBadge;
@@ -125,12 +128,19 @@ public class DrawerLayout extends ToolbarLayout {
         mDrawer = findViewById(R.id.drawerlayout_drawer);
         mToolbarContent = findViewById(R.id.drawerlayout_toolbar_content);
         mDrawerContent = findViewById(R.id.drawerlayout_drawer_content);
+        mDrawerItems = findViewById(R.id.drawerlayout_items);
+        GlassSurfaceView glass = findViewById(R.id.drawerlayout_glass);
+        glass.setSourceView(mToolbarContent);
+        glass.setCornerRadius(getResources().getDisplayMetrics().density * 28);
 
         mHeaderView = mDrawerContent.findViewById(R.id.drawerlayout_default_header);
         mHeaderButton = mHeaderView.findViewById(R.id.drawerlayout_header_button);
         mHeaderBadge = mHeaderView.findViewById(R.id.drawerlayout_header_badge);
 
         mDrawerContainer = mDrawerContent.findViewById(R.id.drawerlayout_drawer_container);
+        mDrawerContainer.getViewTreeObserver().addOnGlobalLayoutListener(
+                () -> ScrollEdgeFades.attachTree(mDrawerContainer,
+                        mContext.getColor(R.color.oui_floating_nav_surface)));
         int scrimColor = mContext.getColor(R.color.oui_drawerlayout_drawer_dim_color);
         mDrawer.setScrimColor(scrimColor);
         scrimAlpha = ((scrimColor >> 24) & 0xFF)/255f;
@@ -144,7 +154,7 @@ public class DrawerLayout extends ToolbarLayout {
 
         mDrawer.setDrawerElevation(0);
         setDrawerWidth();
-        setDrawerCornerRadius(DEFAULT_DRAWER_RADIUS);
+        setDrawerCornerRadius(28.f);
         setNavigationButtonOnClickListener(v -> mDrawer.openDrawer(mDrawerContent));
 
         if (!isInEditMode()) {
@@ -163,11 +173,11 @@ public class DrawerLayout extends ToolbarLayout {
         } else {
             switch (((ToolbarLayoutParams) params).layout_location) {
                 case DRAWER_HEADER:
-                    mDrawerContent.removeView(mHeaderView);
+                    mDrawerItems.removeView(mHeaderView);
                     mHeaderButton = null;
                     mHeaderBadge = null;
-                    mDrawerContent.addView(child, 0, params);
-                    mHeaderView = mDrawerContent.getChildAt(0);
+                    mDrawerItems.addView(child, 0, params);
+                    mHeaderView = mDrawerItems.getChildAt(0);
                     break;
                 case DRAWER_PANEL:
                     mDrawerContainer.addView(child, params);
@@ -265,7 +275,7 @@ public class DrawerLayout extends ToolbarLayout {
         MarginLayoutParams lp = (MarginLayoutParams) mDrawerContent.getLayoutParams();
         lp.topMargin = show
                 ? getResources().getDimensionPixelSize(R.dimen.oui_drawerlayout_drawer_top_margin)
-                : 0;
+                : Math.round(12 * getResources().getDisplayMetrics().density);
         mDrawerContent.setLayoutParams(lp);
     }
 
@@ -403,14 +413,7 @@ public class DrawerLayout extends ToolbarLayout {
         @Override
         public void getOutline(View view, Outline outline) {
             outline.setRoundRect(
-                    mIsRtl
-                            ? 0
-                            : -mCornerRadius,
-                    0,
-                    mIsRtl
-                            ? view.getWidth() + mCornerRadius
-                            : view.getWidth(), view.getHeight(),
-                    mCornerRadius);
+                    0, 0, view.getWidth(), view.getHeight(), mCornerRadius);
         }
     }
 
@@ -425,6 +428,8 @@ public class DrawerLayout extends ToolbarLayout {
 
             float slideX = drawerView.getWidth() * slideOffset;
             if (mIsRtl) slideX *= -1;
+            drawerView.setTranslationX((mIsRtl ? -1 : 1)
+                    * getResources().getDisplayMetrics().density * 12 * slideOffset);
             if (translationView != null) translationView.setTranslationX(slideX);
             else mToolbarContent.setTranslationX(slideX);
 

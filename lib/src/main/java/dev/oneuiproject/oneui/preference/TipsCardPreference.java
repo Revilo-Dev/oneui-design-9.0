@@ -20,6 +20,7 @@ import androidx.preference.PreferenceViewHolder;
 import java.util.ArrayList;
 
 import dev.oneuiproject.oneui.design.R;
+import dev.oneuiproject.oneui.widget.SurfaceShadow;
 
 public class TipsCardPreference extends Preference {
     private Context mContext;
@@ -59,6 +60,8 @@ public class TipsCardPreference extends Preference {
     public void onBindViewHolder(PreferenceViewHolder preferenceViewHolder) {
         super.onBindViewHolder(preferenceViewHolder);
         mItemView = preferenceViewHolder.itemView;
+        float density = mContext.getResources().getDisplayMetrics().density;
+        SurfaceShadow.apply(mItemView, true, 3 * density, 24 * density);
 
         // workaround since we can't use setSelectable here
         if (getOnPreferenceClickListener() != null) {

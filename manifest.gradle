@@ -1,13 +1,14 @@
 // Environment variables.
 ext {
     // Target & Compile SDK.
+    compile_sdk = 36
     target_sdk = 31
 
     // Library version.
-    lib_version = "1.2.6"
+    lib_version = "ui9-v1.0"
 
     // Sample App version.
-    sample_version_code = 17
+    sample_version_code = 18
     sample_version_name = lib_version
 
     // Dependencies versions.

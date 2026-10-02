@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/nav_grid" android:icon="@drawable/sample_nav_grid" android:title="Grid" />
+    <item android:id="@+id/nav_list" android:icon="@drawable/sample_nav_list" android:title="List" />
+    <item android:id="@+id/nav_cards" android:icon="@drawable/sample_nav_cards" android:title="Cards" />
+    <item android:id="@+id/nav_settings" android:icon="@drawable/ic_oui_settings_outline" android:title="Settings" />
+    <item android:id="@+id/nav_menu" android:icon="@drawable/ic_oui_drawer" android:title="Menu" />
+</menu>

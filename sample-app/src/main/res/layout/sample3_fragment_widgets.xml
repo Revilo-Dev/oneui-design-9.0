@@ -1,13 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:overScrollMode="always"
-    android:scrollbars="vertical"
     tools:viewBindingIgnore="true">
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/widgets_scroll_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true"
+        android:overScrollMode="always"
+        android:scrollbars="vertical"
+        android:clipToPadding="false"
+        android:paddingBottom="88dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -24,6 +31,7 @@
             android:text="Compound Buttons" />
 
         <dev.oneuiproject.oneui.widget.RoundLinearLayout
+            android:layout_marginHorizontal="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/oui_background_color"
@@ -72,6 +80,7 @@
             android:text="Buttons" />
 
         <dev.oneuiproject.oneui.widget.RoundLinearLayout
+            android:layout_marginHorizontal="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/oui_background_color"
@@ -138,6 +147,7 @@
             android:text="Spinner" />
 
         <dev.oneuiproject.oneui.widget.RoundFrameLayout
+            android:layout_marginHorizontal="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/oui_background_color"
@@ -154,21 +164,34 @@
         <dev.oneuiproject.oneui.widget.Separator
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="SearchView" />
-
-        <dev.oneuiproject.oneui.widget.RoundFrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/oui_background_color">
-
-            <androidx.appcompat.widget.SearchView
-                android:id="@+id/fragment_searchview"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                app:iconifiedByDefault="false" />
-
-        </dev.oneuiproject.oneui.widget.RoundFrameLayout>
+            android:text="Floating search" />
 
     </LinearLayout>
 
-</androidx.core.widget.NestedScrollView>
+    </androidx.core.widget.NestedScrollView>
+
+    <ScrollView
+        android:id="@+id/widgets_search_results"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/oui_background_color"
+        android:visibility="gone"
+        android:paddingBottom="88dp">
+        <LinearLayout
+            android:id="@+id/widgets_search_result_rows"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="8dp" />
+    </ScrollView>
+
+    <dev.oneuiproject.oneui.widget.FloatingSearchBar
+        android:id="@+id/widgets_floating_search"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp" />
+
+</FrameLayout>

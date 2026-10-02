@@ -4,6 +4,7 @@
     android:layout_height="wrap_content"
     android:paddingHorizontal="@dimen/oui_grid_menu_dialog_horizontal_padding"
     android:paddingVertical="@dimen/oui_grid_menu_dialog_vertical_padding"
+    android:background="@drawable/oui_grid_menu_glass"
     android:focusable="false">
 
     <androidx.recyclerview.widget.RecyclerView

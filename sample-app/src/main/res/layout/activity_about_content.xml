@@ -18,6 +18,7 @@
             android:text="OneUI Project Team" />
 
         <dev.oneuiproject.oneui.widget.RoundLinearLayout
+            android:layout_marginHorizontal="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/oui_background_color"
@@ -46,6 +47,7 @@
             android:text="Open source licenses" />
 
     <dev.oneuiproject.oneui.widget.RoundLinearLayout
+            android:layout_marginHorizontal="16dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/oui_background_color"
@@ -72,6 +74,7 @@
         <dev.oneuiproject.oneui.widget.RelatedCard
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
             android:layout_marginBottom="20dp"
             app:title="Useful links">
 

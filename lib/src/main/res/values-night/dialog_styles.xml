@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="OneUIGlassDialogTheme" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:windowBackground">@drawable/oui_dialog_glass</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackgroundBlurRadius">24dp</item>
+        <item name="android:windowBlurBehindEnabled">true</item>
+        <item name="android:windowBlurBehindRadius">20dp</item>
+    </style>
+</resources>

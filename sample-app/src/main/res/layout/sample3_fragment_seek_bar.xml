@@ -1,100 +1,73 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:viewBindingIgnore="true">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+    android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
         android:orientation="vertical">
-
         <dev.oneuiproject.oneui.widget.Separator
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Horizontal" />
-
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Continuous" />
         <dev.oneuiproject.oneui.widget.RoundLinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/oui_background_color"
-            android:orientation="vertical"
-            android:paddingVertical="12dp">
-
-            <androidx.appcompat.widget.SeslSeekBar
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginVertical="12dp"
-                app:seslSeekBarMode="standard" />
-
-            <androidx.appcompat.widget.SeslSeekBar
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginVertical="12dp"
-                app:seslSeekBarMode="expand" />
-
+            android:layout_marginHorizontal="16dp"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:background="@color/oui_background_color" android:paddingVertical="12dp">
+            <dev.oneuiproject.oneui.widget.OneUISlider
+                android:id="@+id/slider_continuous" android:layout_width="match_parent"
+                android:layout_height="48dp" android:layout_marginHorizontal="24dp"
+                android:contentDescription="Volume" app:leadingIcon="@drawable/sample_slider_volume"
+                app:sliderValue="50" />
         </dev.oneuiproject.oneui.widget.RoundLinearLayout>
-
         <dev.oneuiproject.oneui.widget.Separator
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Stepped" />
+        <dev.oneuiproject.oneui.widget.RoundLinearLayout
+            android:layout_marginHorizontal="16dp"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:background="@color/oui_background_color" android:paddingVertical="12dp">
+            <dev.oneuiproject.oneui.widget.OneUISlider
+                android:id="@+id/slider_steps" android:layout_width="match_parent"
+                android:layout_height="48dp" android:layout_marginHorizontal="24dp"
+                android:contentDescription="Volume levels" app:leadingIcon="@drawable/sample_slider_volume"
+                app:sliderValue="50" app:stepSize="25" app:showTicks="true"
+                app:sliderFillEnabled="false" />
+        </dev.oneuiproject.oneui.widget.RoundLinearLayout>
+        <dev.oneuiproject.oneui.widget.Separator
+            android:layout_width="match_parent" android:layout_height="wrap_content"
             android:text="Vertical" />
-
         <dev.oneuiproject.oneui.widget.RoundLinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/oui_background_color"
-            android:gravity="center"
-            android:orientation="horizontal"
-            android:paddingVertical="12dp">
-
-            <androidx.appcompat.widget.SeslSeekBar
-                android:layout_width="wrap_content"
-                android:layout_height="200dp"
-                android:layout_marginHorizontal="12dp"
-                app:seslSeekBarMode="vertical" />
-
-            <androidx.appcompat.widget.SeslSeekBar
-                android:layout_width="wrap_content"
-                android:layout_height="200dp"
-                android:layout_marginHorizontal="12dp"
-                app:seslSeekBarMode="expand_vertical" />
-
+            android:layout_marginHorizontal="16dp"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:background="@color/oui_background_color" android:gravity="center"
+            android:orientation="horizontal" android:paddingVertical="16dp">
+            <dev.oneuiproject.oneui.widget.OneUISlider
+                android:layout_width="48dp" android:layout_height="200dp"
+                android:layout_marginHorizontal="24dp" android:contentDescription="Vertical level"
+                app:sliderVertical="true" app:sliderValue="35" />
+            <dev.oneuiproject.oneui.widget.OneUISlider
+                android:layout_width="48dp" android:layout_height="200dp"
+                android:layout_marginHorizontal="24dp" android:contentDescription="Vertical steps"
+                app:sliderVertical="true" app:sliderValue="75" app:stepSize="25"
+                app:showTicks="true" app:sliderFillEnabled="false" />
         </dev.oneuiproject.oneui.widget.RoundLinearLayout>
-
         <dev.oneuiproject.oneui.widget.Separator
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
             android:text="Special" />
-
         <dev.oneuiproject.oneui.widget.RoundLinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/oui_background_color"
-            android:orientation="vertical"
+            android:layout_marginHorizontal="16dp"
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:background="@color/oui_background_color" android:orientation="vertical"
             android:paddingVertical="12dp">
-
-            <dev.oneuiproject.oneui.widget.HapticSeekBar
-                android:id="@+id/fragment_seekbar_1"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginVertical="12dp"
-                android:max="5" />
-
-            <androidx.appcompat.widget.SeslSeekBar
-                android:id="@+id/fragment_seekbar_2"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginVertical="12dp" />
-
+            <dev.oneuiproject.oneui.widget.OneUISlider
+                android:layout_width="match_parent" android:layout_height="48dp"
+                android:layout_marginHorizontal="24dp" android:contentDescription="Haptic steps"
+                app:sliderValue="40" app:stepSize="20" app:showTicks="true"
+                app:sliderFillEnabled="false" app:sliderHapticEnabled="true" />
+            <dev.oneuiproject.oneui.widget.OneUISlider
+                android:layout_width="match_parent" android:layout_height="48dp"
+                android:layout_marginHorizontal="24dp" android:contentDescription="Warning threshold"
+                app:sliderValue="50" app:sliderWarningValue="70" />
         </dev.oneuiproject.oneui.widget.RoundLinearLayout>
-
     </LinearLayout>
-
-</FrameLayout>
+</androidx.core.widget.NestedScrollView>

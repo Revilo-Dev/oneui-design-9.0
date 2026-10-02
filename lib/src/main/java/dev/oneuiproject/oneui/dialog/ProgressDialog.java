@@ -22,6 +22,7 @@ import androidx.appcompat.widget.SeslProgressBar;
 import java.text.NumberFormat;
 
 import dev.oneuiproject.oneui.design.R;
+import dev.oneuiproject.oneui.widget.DialogBlur;
 
 public class ProgressDialog extends AlertDialog {
     public static final int STYLE_SPINNER = 0;
@@ -52,6 +53,7 @@ public class ProgressDialog extends AlertDialog {
     private boolean mIndeterminate;
     
     private boolean mHasStarted;
+
     private Handler mViewUpdateHandler;
 
     /**
@@ -272,11 +274,13 @@ public class ProgressDialog extends AlertDialog {
     @Override
     public void onStart() {
         super.onStart();
+        DialogBlur.apply(this);
         mHasStarted = true;
     }
     
     @Override
     protected void onStop() {
+        DialogBlur.release(this);
         super.onStop();
         mHasStarted = false;
     }

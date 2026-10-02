@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/toolbar_page" android:icon="@drawable/ic_oui_drawer" android:title="Toolbar" />
+    <item android:id="@+id/action_bar_page" android:icon="@drawable/sample_nav_cards" android:title="Action bar" />
+</menu>

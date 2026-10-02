@@ -25,6 +25,12 @@
             android:key="dark_mode_auto"
             android:title="System default" />
 
+        <SwitchPreferenceCompat
+            android:key="global_blur_enabled"
+            android:title="Blur effects"
+            android:summary="Blur floating bars, search, dialogs and scroll edges"
+            android:defaultValue="true" />
+
     </PreferenceCategory>
 
     <PreferenceCategory>
@@ -45,12 +51,12 @@
             android:summary="Someone's still using this one?"
             android:defaultValue="true" />
 
-        <SeekBarPreference
-            android:title="SeekBarPreference"
-            android:summary="Summary"
-            app:min="0"
-            android:max="50"
-            android:defaultValue="30"/>
+        <dev.oneuiproject.oneui.preference.OneUISliderPreference
+            android:key="slider_preference"
+            android:title="Slider"
+            android:summary="Drag to change the value"
+            app:minValue="0" app:maxValue="50"
+            android:defaultValue="30" />
 
     </PreferenceCategory>
 
@@ -96,14 +102,13 @@
             android:defaultValue="#0381FE"
             app:showAlphaSlider="true" />
 
-        <dev.oneuiproject.oneui.preference.SeekBarPreferencePro
-            android:title="SeekBarPreferencePro"
-            android:summary="Summary"
-            app:min="0"
-            android:max="5"
-            android:defaultValue="2"
-            app:showTickMark="true"
-            app:adjustable="true" />
+        <dev.oneuiproject.oneui.preference.OneUISliderPreference
+            android:key="stepped_slider_preference"
+            android:title="Stepped slider"
+            android:summary="Choose one of six values"
+            app:minValue="0" app:maxValue="5" app:stepSize="1"
+            app:showTicks="true" app:sliderFillEnabled="false"
+            android:defaultValue="2" />
 
     </PreferenceCategory>
 

@@ -12,6 +12,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -33,6 +34,8 @@ import androidx.recyclerview.widget.SimpleItemAnimator;
 import java.util.ArrayList;
 
 import dev.oneuiproject.oneui.design.R;
+import dev.oneuiproject.oneui.widget.ScrollEdgeFades;
+import dev.oneuiproject.oneui.widget.DialogBlur;
 
 public class GridMenuDialog extends AlertDialog {
     private static final String TAG = "GridMenuDialog";
@@ -47,6 +50,16 @@ public class GridMenuDialog extends AlertDialog {
     private LinearLayout mContentView;
     private RecyclerView mGridListView;
     private GridListAdapter mAdapter;
+
+    @Override protected void onStart() {
+        super.onStart();
+        DialogBlur.apply(this);
+    }
+
+    @Override protected void onStop() {
+        DialogBlur.release(this);
+        super.onStop();
+    }
 
     public class GridMenuItem {
         private boolean mEnabled = true;
@@ -155,6 +168,8 @@ public class GridMenuDialog extends AlertDialog {
         resetContentPadding();
 
         mGridListView = mContentView.findViewById(R.id.grid_menu_view);
+        ScrollEdgeFades.attach(mGridListView)
+                .setColor(mContext.getColor(R.color.oui_floating_nav_surface));
         mAdapter = new GridListAdapter();
         mGridListView.setLayoutManager(new GridLayoutManager(mContext, mSpanCount));
         mGridListView.setAdapter(mAdapter);
@@ -167,6 +182,10 @@ public class GridMenuDialog extends AlertDialog {
 
         setView(mContentView);
         super.onCreate(savedInstanceState);
+        Window window = getWindow();
+        if (window != null) {
+            window.setBackgroundDrawableResource(android.R.color.transparent);
+        }
     }
 
     @Override

@@ -10,20 +10,17 @@
         android:id="@+id/toolbarlayout_app_bar"
         style="?attr/appBarLayoutStyle"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        app:layout_behavior="dev.oneuiproject.oneui.widget.FlowHeaderBehavior">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:id="@+id/toolbarlayout_collapsing_toolbar"
             style="?attr/collapsingToolbarLayoutStyle"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_scrollFlags="exitUntilCollapsed|scroll">
+            app:layout_scrollFlags="exitUntilCollapsed|scroll|snap">
 
             <include layout="@layout/oui_view_toolbar_main" />
-
-            <include
-                layout="@layout/oui_view_toolbar_search"
-                android:visibility="gone" />
 
             <include
                 layout="@layout/oui_view_toolbar_action_mode"
@@ -38,6 +35,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
+        app:surfaceShadowEnabled="false"
         app:roundedCorners="top_left|top_right" />
 
     <dev.oneuiproject.oneui.widget.RoundLinearLayout
@@ -45,6 +43,14 @@
         android:layout_width="match_parent"
         android:layout_height="26dp"
         android:layout_gravity="bottom"
+        app:surfaceShadowEnabled="false"
         app:roundedCorners="bottom_left|bottom_right" />
+
+    <FrameLayout
+        android:id="@+id/toolbarlayout_sticky_bottom_host"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:clipChildren="false" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -22,6 +22,9 @@ public class RoundLinearLayout extends LinearLayout {
     private SeslRoundedCorner mRoundedCorner;
 
     private int mRoundedCornerColor = -1;
+    private boolean surfaceShadowEnabled;
+    private boolean surfaceShadowExplicit;
+    private float surfaceShadowElevation;
 
     public RoundLinearLayout(@NonNull Context context) {
         this(context, null);
@@ -45,6 +48,11 @@ public class RoundLinearLayout extends LinearLayout {
         TypedArray a = mContext.obtainStyledAttributes(attrs, R.styleable.RoundLinearLayout);
         final int roundedCorners = a.getInt(R.styleable.RoundLinearLayout_roundedCorners,
                 SeslRoundedCorner.ROUNDED_CORNER_ALL);
+        surfaceShadowExplicit = a.hasValue(R.styleable.RoundLinearLayout_surfaceShadowEnabled);
+        surfaceShadowEnabled = a.getBoolean(R.styleable.RoundLinearLayout_surfaceShadowEnabled,
+                getBackground() != null);
+        surfaceShadowElevation = a.getDimension(R.styleable.RoundLinearLayout_surfaceShadowElevation,
+                3 * getResources().getDisplayMetrics().density);
         a.recycle();
 
         mRoundedCorner = new SeslRoundedCorner(mContext);
@@ -58,6 +66,29 @@ public class RoundLinearLayout extends LinearLayout {
             mRoundedCorner.setRoundedCornerColor(roundedCorners, mRoundedCornerColor);
         }
         mRoundedCorner.setRoundedCorners(roundedCorners);
+        SurfaceShadow.apply(this, surfaceShadowEnabled, surfaceShadowElevation,
+                18 * getResources().getDisplayMetrics().density);
+    }
+
+    public void setSurfaceShadowEnabled(boolean enabled) {
+        surfaceShadowExplicit = true;
+        surfaceShadowEnabled = enabled;
+        SurfaceShadow.apply(this, enabled, surfaceShadowElevation,
+                18 * getResources().getDisplayMetrics().density);
+    }
+
+    @Override protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (!surfaceShadowExplicit && getBackground() != null && !surfaceShadowEnabled) {
+            surfaceShadowEnabled = true;
+            SurfaceShadow.apply(this, true, surfaceShadowElevation,
+                    18 * getResources().getDisplayMetrics().density);
+        }
+    }
+
+    public void setSurfaceShadowElevation(float pixels) {
+        surfaceShadowElevation = Math.max(0, pixels);
+        setSurfaceShadowEnabled(surfaceShadowEnabled);
     }
 
     @Override

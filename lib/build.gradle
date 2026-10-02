@@ -5,7 +5,8 @@ plugins {
 }
 
 android {
-    compileSdk target_sdk
+    namespace 'dev.oneuiproject.oneui.design'
+    compileSdk compile_sdk
 
     defaultConfig {
         minSdk 23

@@ -11,12 +11,49 @@
     </attr>
 
     <!-- Custom Views -->
+    <declare-styleable name="ProgressiveBlurLayout">
+        <attr name="blurHeight" format="dimension" />
+        <attr name="blurTop" format="boolean" />
+        <attr name="blurBottom" format="boolean" />
+        <attr name="fadeColor" format="color" />
+    </declare-styleable>
+    <declare-styleable name="FloatingNavigationBar">
+        <attr name="navigationMenu" format="reference" />
+        <attr name="showLabels" format="boolean" />
+        <attr name="blurEnabled" format="boolean" />
+        <attr name="actionIcon" format="reference" />
+        <attr name="actionContentDescription" format="string" />
+    </declare-styleable>
+    <declare-styleable name="OneUISlider">
+        <attr name="sliderVertical" format="boolean" />
+        <attr name="sliderFillEnabled" format="boolean" />
+        <attr name="sliderHapticEnabled" format="boolean" />
+        <attr name="sliderWarningValue" format="integer" />
+        <attr name="minValue" format="integer" />
+        <attr name="maxValue" format="integer" />
+        <attr name="sliderValue" format="integer" />
+        <attr name="stepSize" format="integer" />
+        <attr name="showTicks" format="boolean" />
+        <attr name="sliderActiveColor" format="color" />
+        <attr name="sliderTrackColor" format="color" />
+        <attr name="thumbFillColor" format="color" />
+        <attr name="leadingIcon" format="reference" />
+    </declare-styleable>
+    <declare-styleable name="FloatingToolbar">
+        <attr name="toolbarMenu" format="reference" />
+        <attr name="toolbarShowLabels" format="boolean" />
+        <attr name="toolbarLightSurface" format="boolean" />
+    </declare-styleable>
     <declare-styleable name="RoundFrameLayout">
         <attr name="roundedCorners" />
+        <attr name="surfaceShadowEnabled" format="boolean" />
+        <attr name="surfaceShadowElevation" format="dimension" />
     </declare-styleable>
 
     <declare-styleable name="RoundLinearLayout">
         <attr name="roundedCorners" />
+        <attr name="surfaceShadowEnabled" />
+        <attr name="surfaceShadowElevation" />
     </declare-styleable>
 
     <declare-styleable name="RelatedCard">
@@ -86,6 +123,9 @@
         <attr name="title" format="string" />
         <!--The toolbar's expanded title.-->
         <attr name="subtitle" format="string" />
+        <attr name="stickyTitleEnabled" format="boolean" />
+        <attr name="stickyActionsEnabled" format="boolean" />
+        <attr name="stickyActionBlurEnabled" format="boolean" />
     </declare-styleable>
 
     <declare-styleable name="ToolbarLayoutParams">

@@ -22,6 +22,9 @@ public class RelatedCard extends FrameLayout {
     private LinearLayout mCardViewsContainer;
     private TextView mCardTitle;
     private String mTitle;
+    private View mSurface;
+    private boolean shadowEnabled = true;
+    private float shadowElevation;
 
     public RelatedCard(@NonNull Context context) {
         this(context, null);
@@ -39,10 +42,14 @@ public class RelatedCard extends FrameLayout {
     public RelatedCard(@NonNull Context context, @Nullable AttributeSet attrs,
                             int defStyleAttr, int defStyleRes) {
         super(context, attrs, defStyleAttr, defStyleRes);
+        setClipChildren(false);
 
         LayoutInflater inflater = (LayoutInflater) context
                 .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         inflater.inflate(R.layout.oui_view_relative_link, this, true);
+        mSurface = getChildAt(0);
+        shadowElevation = 3 * getResources().getDisplayMetrics().density;
+        updateShadow();
 
         TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.RelatedCard,
                 0, 0);
@@ -92,5 +99,20 @@ public class RelatedCard extends FrameLayout {
     public void setTitleText(String title) {
         mTitle = title;
         mCardTitle.setText(mTitle);
+    }
+
+    public void setSurfaceShadowEnabled(boolean enabled) {
+        shadowEnabled = enabled;
+        updateShadow();
+    }
+
+    public void setSurfaceShadowElevation(float pixels) {
+        shadowElevation = Math.max(0, pixels);
+        updateShadow();
+    }
+
+    private void updateShadow() {
+        SurfaceShadow.apply(mSurface, shadowEnabled, shadowElevation,
+                26 * getResources().getDisplayMetrics().density);
     }
 }

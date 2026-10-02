@@ -17,15 +17,24 @@
 
     </LinearLayout>
 
-    <LinearLayout
+    <FrameLayout
         android:id="@+id/drawerlayout_drawer_content"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_marginTop="@dimen/oui_drawerlayout_drawer_top_margin"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"
         android:layout_gravity="start"
-        android:background="@color/oui_background_color"
-        android:gravity="center_horizontal"
-        android:orientation="vertical">
+        android:background="@android:color/transparent">
+
+        <dev.oneuiproject.oneui.widget.GlassSurfaceView
+            android:id="@+id/drawerlayout_glass"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+
+        <LinearLayout android:id="@+id/drawerlayout_items"
+            android:layout_width="match_parent" android:layout_height="match_parent"
+            android:gravity="center_horizontal" android:orientation="vertical">
 
         <RelativeLayout
             android:id="@+id/drawerlayout_default_header"
@@ -72,6 +81,7 @@
 
         </FrameLayout>
 
-    </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
 
 </androidx.drawerlayout.widget.DrawerLayout>

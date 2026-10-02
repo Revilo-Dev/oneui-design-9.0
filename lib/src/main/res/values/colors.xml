@@ -1,5 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="oui_slider_warning_color">#FF695E</color>
+
+    <color name="oui_floating_nav_surface">#FFFFFFFF</color>
+    <color name="oui_floating_nav_glass">#F4FFFFFF</color>
+    <color name="oui_floating_nav_selected">#FFE4E4E4</color>
+    <color name="oui_floating_nav_press">#12000000</color>
+    <color name="oui_floating_nav_primary">#FF17151A</color>
+    <color name="oui_floating_nav_secondary">#FF666169</color>
+    <color name="oui_floating_toolbar_light">#FFFFFFFF</color>
+    <color name="oui_floating_toolbar_dark">#FF2E2E30</color>
+    <color name="oui_floating_toolbar_glass_light">#F4FFFFFF</color>
+    <color name="oui_floating_toolbar_glass_dark">#F22E2E30</color>
+    <color name="oui_grid_menu_icon_circle">#FFFFFFFF</color>
+    <color name="oui_grid_menu_glass">@color/oui_glass_surface</color>
+    <color name="oui_floating_toolbar_light_text">#FF17151A</color>
+    <color name="oui_floating_toolbar_dark_text">#FFF9F7FA</color>
 
     <color name="oui_round_and_bgcolor">@color/sesl_round_and_bgcolor_light</color>
     <color name="oui_background_color">@color/sesl_background_color_light</color>
@@ -24,6 +40,9 @@
     <color name="oui_unclickablepref_link_text_color">#ff3b3b3b</color>
 
     <!-- SeekBar -->
+    <color name="oui_slider_active_color">#3E91FF</color>
+    <color name="oui_slider_track_color">#B5B5B5</color>
+    <color name="oui_slider_tick_color">#D3D3D3</color>
     <color name="oui_seekbar_overlap_color_default">
         @color/sesl_seekbar_overlap_color_default_light
     </color>
@@ -46,6 +65,7 @@
     <color name="oui_n_badge_text_color">@color/sesl_white</color>
 
     <!-- DrawerLayout -->
+    <color name="oui_glass_surface">#F4FFFFFF</color>
     <color name="oui_drawerlayout_drawer_dim_color">#33000000</color>
     <color name="oui_drawerlayout_header_icon_color">#ff676768</color>
 

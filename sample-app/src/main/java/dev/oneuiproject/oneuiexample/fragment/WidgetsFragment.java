@@ -1,16 +1,14 @@
 package dev.oneuiproject.oneuiexample.fragment;
 
-import android.app.SearchManager;
-import android.content.ComponentName;
-import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.AppCompatSpinner;
-import androidx.appcompat.widget.SearchView;
 
 import com.sec.sesl.tester.R;
 
@@ -19,6 +17,8 @@ import java.util.List;
 
 import dev.oneuiproject.oneuiexample.activity.MainActivity;
 import dev.oneuiproject.oneuiexample.base.BaseFragment;
+import dev.oneuiproject.oneui.widget.FloatingSearchBar;
+import dev.oneuiproject.oneui.widget.ScrollEdgeFades;
 
 public class WidgetsFragment extends BaseFragment
         implements View.OnClickListener {
@@ -43,12 +43,23 @@ public class WidgetsFragment extends BaseFragment
         adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
 
-        SearchView searchView = view.findViewById(R.id.fragment_searchview);
-        SearchManager manager = (SearchManager) mContext.getSystemService(Context.SEARCH_SERVICE);
-        searchView.setSearchableInfo(manager.getSearchableInfo(
-                new ComponentName(mContext, MainActivity.class)));
-        searchView.seslSetUpButtonVisibility(View.VISIBLE);
-        searchView.seslSetOnUpButtonClickListener(this);
+        FloatingSearchBar search = view.findViewById(R.id.widgets_floating_search);
+        View content = view.findViewById(R.id.widgets_scroll_content);
+        ScrollView results = view.findViewById(R.id.widgets_search_results);
+        LinearLayout rows = view.findViewById(R.id.widgets_search_result_rows);
+        search.setSourceView(content);
+        search.setHint("Search pages");
+        search.setPersistent(true);
+        search.setListener(new FloatingSearchBar.Listener() {
+            @Override public void onQueryChanged(String query) {
+                boolean hasQuery = !query.trim().isEmpty();
+                results.setVisibility(hasQuery ? View.VISIBLE : View.GONE);
+                if (hasQuery)
+                    ((MainActivity) requireActivity()).populatePageSearchResults(rows, query);
+                search.setSourceView(hasQuery ? results : content);
+            }
+        });
+        ScrollEdgeFades.attach(results).setColor(requireContext().getColor(R.color.oui_background_color));
     }
 
     @Override

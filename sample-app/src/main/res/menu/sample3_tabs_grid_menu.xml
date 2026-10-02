@@ -29,4 +29,8 @@
         android:icon="@drawable/ic_oui_settings_outline"
         android:title="Item 7" />
 
+    <item
+        android:icon="@drawable/ic_oui_drawer"
+        android:title="Item 8" />
+
 </menu>

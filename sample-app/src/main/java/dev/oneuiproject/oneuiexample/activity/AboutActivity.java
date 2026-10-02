@@ -33,6 +33,7 @@ import com.sec.sesl.tester.databinding.ActivityAboutContentBinding;
 import dev.oneuiproject.oneui.utils.ViewUtils;
 import dev.oneuiproject.oneui.utils.internal.ToolbarLayoutUtils;
 import dev.oneuiproject.oneui.widget.Toast;
+import dev.oneuiproject.oneui.widget.StickyToolbarControls;
 
 public class AboutActivity extends AppCompatActivity
         implements View.OnClickListener {
@@ -55,6 +56,8 @@ public class AboutActivity extends AppCompatActivity
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
         mBinding.aboutToolbar.setNavigationOnClickListener(v -> onBackPressed());
+        new StickyToolbarControls(mBinding.aboutAppBar, mBinding.aboutToolbar,
+                mBinding.aboutBottomContainer);
 
         resetAppBar(getResources().getConfiguration());
         initContent();
@@ -144,8 +147,8 @@ public class AboutActivity extends AppCompatActivity
         mBinding.aboutHeaderAppIcon.setImageDrawable(appIcon);
         mBinding.aboutBottomAppIcon.setImageDrawable(appIcon);
 
-        mBinding.aboutHeaderAppVersion.setText("Version " + BuildConfig.VERSION_NAME);
-        mBinding.aboutBottomAppVersion.setText("Version " + BuildConfig.VERSION_NAME);
+        mBinding.aboutHeaderAppVersion.setText(getString(R.string.about_version, BuildConfig.VERSION_NAME));
+        mBinding.aboutBottomAppVersion.setText(getString(R.string.about_version, BuildConfig.VERSION_NAME));
 
         mBinding.aboutHeaderGithub.setOnClickListener(this);
         TooltipCompat.setTooltipText(mBinding.aboutHeaderGithub, "GitHub");

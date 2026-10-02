@@ -19,6 +19,7 @@
             android:text="Indeterminate" />
 
         <dev.oneuiproject.oneui.widget.RoundLinearLayout
+            android:layout_marginHorizontal="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/oui_background_color"
@@ -77,6 +78,7 @@
             android:text="Determinate" />
 
         <dev.oneuiproject.oneui.widget.RoundLinearLayout
+            android:layout_marginHorizontal="16dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/oui_background_color"

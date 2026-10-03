@@ -62,7 +62,7 @@ The One UI Sample app has been made to showcase the components from both our [on
 
 # Scroll edge fades
 
-The Flow-style progressive effect is a themed color fade, not a pixel blur. `ToolbarLayout` and `DrawerLayout` install it on every scrollable page descendant, including `RecyclerView`, `ListView`, `ScrollView`, and `NestedScrollView`. It appears only when more content exists in that direction and never consumes touch events. To use it outside those layouts, call `ScrollEdgeFades.attach(scrollable)` or wrap a single scrolling view in `ProgressiveBlurLayout`. Both default to 56dp edges. The existing `blurHeight`, `blurTop`, and `blurBottom` XML names remain supported by the wrapper.
+The Flow-style progressive effect is a themed color fade, not a pixel blur. `ToolbarLayout` and `DrawerLayout` install it on every scrollable page descendant, including `RecyclerView`, `ListView`, `ScrollView`, and `NestedScrollView`. The scrolling content overlaps the collapsed toolbar so the top fade begins directly below the status bar. It appears only when more content exists in that direction and never consumes touch events. To use it outside those layouts, call `ScrollEdgeFades.attach(scrollable)` or wrap a single scrolling view in `ProgressiveBlurLayout`. Both default to 56dp edges. The existing `blurHeight`, `blurTop`, and `blurBottom` XML names remain supported by the wrapper.
 
 ```xml
 <dev.oneuiproject.oneui.widget.ProgressiveBlurLayout
@@ -80,7 +80,7 @@ Use `setFadeHeights(topPx, bottomPx)`, `setBlurEdges(top, bottom)`, and `setFade
 
 ## Pinned action bar and floating search
 
-`ToolbarLayout` pins its toolbar when the large header collapses. Once page content scrolls behind it, the actual navigation button and action menu become rounded control groups. The action group measures around its visible icons, with equal icon widths and padding. The toolbar remains transparent. The compact page title appears when the header closes and leaves as the content scrolls; enable `setStickyTitleEnabled(true)` to keep it pinned. Screens can add actions through `getToolbar()` and configure the groups through `setStickyActionsEnabled`, `setStickyActionBlurEnabled`, `setStickyActionShadowElevation`, and `setStickyActionTintColor`. `getStickyToolbarControls()` also exposes icon width, group padding, corner radius, horizontal inset, collapse tolerance, and content scroll trigger options. A standalone `CoordinatorLayout` can use `StickyToolbarControls(appBar, toolbar, content)`, as the About screen does.
+`ToolbarLayout` pins its toolbar when the large header collapses. Once page content scrolls behind it, the actual navigation button and action menu become rounded control groups. Both groups use the same height; the navigation button is circular and the action group measures around its visible icons with equal icon widths and padding. The toolbar remains transparent. The compact page title appears when the header closes and leaves as the content scrolls; enable `setStickyTitleEnabled(true)` to keep it pinned. Screens can add actions through `getToolbar()` and configure the groups through `setStickyActionsEnabled`, `setStickyActionBlurEnabled`, `setStickyActionShadowElevation`, and `setStickyActionTintColor`. `getStickyToolbarControls()` also exposes icon width, group padding, action group corner radius, horizontal inset, collapse tolerance, and content scroll trigger options. A standalone `CoordinatorLayout` can use `StickyToolbarControls(appBar, toolbar, content)`, as the About screen does.
 
 `showSearchMode()` opens the 56dp bottom search pill above the navigation bar or keyboard. Its close button and Back clear the query and restore the page. `showSearchMode(initialQuery)` restores a query without sending a duplicate text callback. Screens own filtering through `setSearchModeListener`; use `getFloatingSearchBar()` to customize the hint, icons, animation timing, blur surface, and input field. Opening search hides the sticky bottom bar and footer, then restores them on close.
 
@@ -92,7 +92,7 @@ layout.getFloatingSearchBar().setAnimationDurations(180, 130);
 layout.getStickyToolbarControls().setCornerRadius(
         Math.round(28 * layout.getResources().getDisplayMetrics().density));
 layout.getStickyToolbarControls().setItemWidth(
-        Math.round(48 * layout.getResources().getDisplayMetrics().density));
+        Math.round(44 * layout.getResources().getDisplayMetrics().density));
 layout.setStickyActionBlurEnabled(true);
 ```
 
@@ -100,7 +100,7 @@ The sample's search action filters its page list as text changes. For applicatio
 
 ## Floating navigation
 
-`FloatingNavigationBar` is a reusable view for compact navigation. Add it over content in a `FrameLayout`, leaving a bottom content inset so the last row stays reachable. Its menu items provide stable IDs, icons, and accessible titles. Use up to five destinations, with an optional circular end action independent of navigation selection.
+`FloatingNavigationBar` is a reusable view for compact navigation. Add it over content in a `FrameLayout`, leaving a bottom content inset so the last row stays reachable. Its menu items provide stable IDs, icons, and accessible titles. Use up to five destinations, with an optional circular end action independent of navigation selection. For outlined icons that fill when selected, call `setSelectedIcon(itemId, filledDrawable)` after inflating the menu. The sample Navigation page demonstrates this for Grid, List, Cards, and Settings.
 
 ```xml
 <dev.oneuiproject.oneui.widget.FloatingNavigationBar
@@ -122,7 +122,8 @@ nav.setOnItemSelectedListener(itemId -> showDestination(itemId));
 nav.setAction(R.drawable.ic_add, "Add item", v -> addItem());
 // Optional: nav.setShowLabels(false); nav.setShowIcons(false);
 // nav.setBlurEnabled(false); nav.setAnimationsEnabled(false); nav.clearAction();
-// nav.setItemWidth(64dp); nav.setBarHeight(58dp); nav.setSelectedColor(color);
+// nav.setItemWidth(68dp); nav.setBarHeight(60dp); nav.setSelectedColor(color);
+// nav.setSelectedIcon(R.id.nav_grid, R.drawable.sample_nav_grid_filled);
 ```
 
 To link actual pages, put them as direct children of `NavigationPageContainer`. Give each page the same ID as its menu item, then bind once:
@@ -134,13 +135,37 @@ nav.bindPages(pages);
 nav.setPageSwipingEnabled(true); // Optional; false disables horizontal page swipes.
 ```
 
-Place the page container and bar as siblings in a full-height `FrameLayout`, with the bar aligned to the bottom. Leave 88dp of bottom space in the page container so content stays reachable. A menu item without a matching page can be handled by `setOnItemSelectedListener`, as the sample does for its popup. The sample has Grid, List, Cards, and Settings pages; the explanatory card is only on Settings. Press and page transitions follow `setAnimationsEnabled`. With blur enabled, the view samples content behind it; solid mode skips this work. Surfaces use `#E3E3E3` in light mode and `#2E2E30` in dark mode, with `#FFFFFF` and `#3D3D3D` selected pills. Samsung's [bottom navigation guidance](https://developer.samsung.com/one-ui/comp/bottom-navigation.html) describes the tab behavior and [bottom bar guidance](https://developer.samsung.com/one-ui/comp/bottom-bar.html) describes bottom actions.
+Place the page container and bar as siblings in a full-height `FrameLayout`, with the bar aligned to the bottom. Leave 88dp of bottom space in the page container so content stays reachable. A menu item without a matching page can be handled by `setOnItemSelectedListener`, as the sample does for its popup. The sample has gradient album tiles on Grid, icon rows on List, expandable cards on Cards, and controls on Settings. Press and page transitions follow `setAnimationsEnabled`. With blur enabled, the view samples content behind it; solid mode skips this work. Surfaces use `#E3E3E3` in light mode and `#2E2E30` in dark mode, with `#FFFFFF` and `#3D3D3D` selected pills. Samsung's [bottom navigation guidance](https://developer.samsung.com/one-ui/comp/bottom-navigation.html) describes the tab behavior and [bottom bar guidance](https://developer.samsung.com/one-ui/comp/bottom-bar.html) describes bottom actions.
+
+`IconRowView` powers both the plain List rows and expandable Cards rows. Set `setIconResource`, `setIconBackgroundColor`, `setIconTintColor`, `setTitle`, and `setSubtitle` for either style. Call `setExpandedText("Example text")` to add a chevron and expandable detail; omit it for a plain row. Cards disable automatic scroll edge fades with `ScrollEdgeFades.setAutoAttachEnabled(scrollView, false)`.
+
+`ImageTileView` is used by the Grid examples. Set its title and subtitle, then choose a gradient or an image source. The sample uses gradients with placeholder titles and random counts; it does not bundle photos.
+
+```java
+ImageTileView tile = new ImageTileView(context);
+tile.setTitle("My album");
+tile.setSubtitle("42 photos");
+tile.setGradientColors(0xFF8B97AF, 0xFF434B69); // Default visual without an image.
+tile.setImageUri(latestPhotoUri);                 // URI your app retrieved from MediaStore.
+// Or: tile.setImageUri(pickedPhotoUri);         // URI returned by the system photo picker.
+// Or: tile.setImagePath(localImagePath);        // Local path, file://, or content:// string.
+// Or: tile.setImageResource(R.drawable.my_photo);// Image packaged with your app.
+// tile.setImageUri(null);                       // Show the gradient again.
+```
+
+Pass a readable URI for the latest or picked photo; the app that chooses the photo also handles the required media access. The tile displays it with center cropping and keeps the gradient underneath as a fallback.
 
 For one to three destinations without an end action, the bar sizes itself to its items. Use `android:layout_gravity="bottom|center_horizontal"` inside a `FrameLayout` to center a compact bar. Four or five destinations fill the available width.
 
 ## Sliders
 
 `OneUISlider` supports a thick rounded track, a palette-colored active segment, and a circular thumb filled with the current background color. It works from API 23, supports touch, keyboard and accessibility adjustments, and can show discrete steps, vertical orientation, haptic steps, and a warning threshold. The sample's stepped sliders have no fill.
+
+Set `sliderWarningValue` to mark the end of a slider with a light red warning segment. Crossing the threshold changes the active fill, thumb outline, and leading icon to the theme's error accent. `setWarningAreaColor` changes the warning segment color.
+
+`OneUIThickSlider` provides a larger volume or brightness control in horizontal or vertical form. Set `thickIcon`, `thickShowNumber`, `thickShowMenuButton`, and `thickWarningValue` independently. The menu button calls `setOnMenuClickListener`; the warning range colors the filled bar with the error accent and keeps the icon legible in white or black. The sample SeekBar page shows both orientations.
+
+`FloatingSearchBar.setCloseButtonVisible(false)` removes the exit action from a search field that stays on its page. Place `FloatingScrollToTopButton` after the scrolling view in a `FrameLayout`, then call `bind(recyclerView)`; its elevation keeps it above the page's scroll fade. Give it a larger bottom margin when a floating search bar is present. The Icons example uses an 88dp bottom margin.
 
 ```xml
 <dev.oneuiproject.oneui.widget.OneUISlider
@@ -184,6 +209,10 @@ toolbar.setBlurEnabled(true);
 When a page uses `ToolbarLayout` or `DrawerLayout`, call `setStickyBottomBar(bar)` after its view is created. This moves the bar into a fixed overlay above the scrolling page; call `setStickyBottomBar(null)` when leaving the page. The sample does this when switching between Navigation and Toolbar. `GlassSurfaceView` provides the shared rounded blur surface used by the collapsed app bar and floating drawer. The expanded app bar retains its flat presentation. The theme gives AppCompat alert dialogs a rounded translucent surface and uses Android window blur on API 31+; older versions retain the translucent surface.
 
 `BlurSettings` provides an app-wide override for glass surfaces, dialog backdrops, and progressive scroll fades. The sample exposes its `global_blur_enabled` key in Preferences. A component's own blur option still controls that component when the global setting is on. Call `BlurSettings.setEnabled(context, false)` to switch all blur off in code.
+
+`GridMenuDialog` keeps the page sharp and blurs its rounded menu card by default. Call `setCardBlurEnabled(false)` for a solid card; the app-wide blur setting still overrides the card.
+
+For a commented settings page built from the existing preference components, see [settings-page-example.md](docs/settings-page-example.md).
 
 `FloatingSearchBar` can be embedded as a full search field with `setPersistent(true)`. Set its scroll source with `setSourceView`, supply a `Listener` for filtering or submission, and customize its hint, icons, and animation durations. The sample Widgets page uses the same class as the toolbar search overlay.
 

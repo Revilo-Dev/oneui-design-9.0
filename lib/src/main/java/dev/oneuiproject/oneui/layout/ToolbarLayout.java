@@ -24,6 +24,8 @@ import android.widget.CompoundButton;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.AbsListView;
+import android.widget.ScrollView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.IdRes;
@@ -38,6 +40,8 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.widget.NestedScrollView;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.appbar.CollapsingToolbarLayout;
@@ -48,6 +52,7 @@ import dev.oneuiproject.oneui.design.R;
 import dev.oneuiproject.oneui.utils.internal.ToolbarLayoutUtils;
 import dev.oneuiproject.oneui.view.internal.NavigationBadgeIcon;
 import dev.oneuiproject.oneui.widget.FloatingSearchBar;
+import dev.oneuiproject.oneui.widget.ProgressiveBlurLayout;
 import dev.oneuiproject.oneui.widget.ScrollEdgeFades;
 import dev.oneuiproject.oneui.widget.StickyToolbarControls;
 
@@ -93,6 +98,7 @@ public class ToolbarLayout extends LinearLayout {
     protected int mLayout;
     protected boolean mExpandable;
     protected boolean mExpanded;
+    private boolean mReserveExpandedHeader;
     protected Drawable mNavigationIcon;
     private LayerDrawable mNavigationBadgeIcon;
     protected CharSequence mTitleCollapsed;
@@ -108,6 +114,7 @@ public class ToolbarLayout extends LinearLayout {
     protected FrameLayout mMainContainer;
     private FrameLayout mFooterContainer;
     private FrameLayout mStickyBottomHost;
+    private FrameLayout mFrontOverlayHost;
     private FloatingSearchBar mFloatingSearchBar;
     private StickyToolbarControls mStickyControls;
     private StickyToolbarControls mActionModeStickyControls;
@@ -167,6 +174,7 @@ public class ToolbarLayout extends LinearLayout {
                     R.layout.oui_layout_toolbarlayout_appbar);
             mExpandable = a.getBoolean(R.styleable.ToolbarLayout_expandable, true);
             mExpanded = a.getBoolean(R.styleable.ToolbarLayout_expanded, mExpandable);
+            mReserveExpandedHeader = mExpanded;
             mNavigationIcon = a.getDrawable(R.styleable.ToolbarLayout_navigationIcon);
             mTitleExpanded
                     = mTitleCollapsed = a.getString(R.styleable.ToolbarLayout_title);
@@ -245,7 +253,16 @@ public class ToolbarLayout extends LinearLayout {
             }
             return insets;
         });
+        mFrontOverlayHost = new FrameLayout(mContext);
+        mFrontOverlayHost.setClipChildren(false);
+        mFrontOverlayHost.setClipToPadding(false);
+        mFrontOverlayHost.setElevation(dp(20));
+        mCoordinatorLayout.addView(mFrontOverlayHost,
+                new CoordinatorLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT));
+        mFloatingSearchBar.setElevation(dp(24));
         mMainContainer.getViewTreeObserver().addOnGlobalLayoutListener(() -> {
+            padFullBleedScrollContent(mMainContainer);
             ScrollEdgeFades.attachTree(mMainContainer);
         });
         mCollapsingToolbarLayout.setContentScrimColor(Color.TRANSPARENT);
@@ -257,7 +274,19 @@ public class ToolbarLayout extends LinearLayout {
                 mAppBarLayout, mActionModeToolbar, mMainContainer);
         mActionModeStickyControls.setEnabled(mStickyActionsEnabled);
         mActionModeStickyControls.setBlurEnabled(mStickyActionBlurEnabled);
-        mAppBarLayout.addOnOffsetChangedListener((bar, offset) -> updateStickyTitle());
+        mAppBarLayout.addOnOffsetChangedListener((bar, offset) -> {
+            int range = bar.getTotalScrollRange();
+            boolean atExpandedEnd = offset == 0 && mExpandable;
+            boolean atCollapsedEnd = range > 0 && Math.abs(offset) >= range;
+            if (atExpandedEnd || atCollapsedEnd) {
+                boolean reserveExpanded = atExpandedEnd;
+                if (mReserveExpandedHeader != reserveExpanded) {
+                    mReserveExpandedHeader = reserveExpanded;
+                    mMainContainer.post(() -> padFullBleedScrollContent(mMainContainer));
+                }
+            }
+            updateStickyTitle();
+        });
         mMainContainer.getViewTreeObserver().addOnScrollChangedListener(this::updateStickyTitle);
         mBottomActionModeBar = findViewById(R.id.toolbarlayout_bottom_nav_view);
 
@@ -274,6 +303,51 @@ public class ToolbarLayout extends LinearLayout {
         setTitle(mTitleExpanded, mTitleCollapsed);
         setExpandedSubtitle(mSubtitleExpanded);
 
+    }
+
+    /** Reserve the header once inside the scrolling content while its viewport stays full-screen. */
+    private void padFullBleedScrollContent(View view) {
+        if (view instanceof RecyclerView || view instanceof NestedScrollView
+                || view instanceof ScrollView || view instanceof AbsListView) {
+            int[] padding = (int[]) view.getTag(R.id.oui_full_bleed_padding_applied);
+            if (padding == null) {
+                padding = new int[]{view.getPaddingTop(), -1};
+                view.setTag(R.id.oui_full_bleed_padding_applied, padding);
+            }
+            int toolbarHeight = mMainToolbar.getHeight();
+            if (toolbarHeight <= 0) toolbarHeight = dp(56);
+            int header = mReserveExpandedHeader && mExpandable
+                    ? Math.max(toolbarHeight, mAppBarLayout.getMeasuredHeight())
+                    : toolbarHeight;
+            if (padding[1] != header) {
+                view.setPadding(view.getPaddingLeft(), padding[0] + header,
+                        view.getPaddingRight(), view.getPaddingBottom());
+                ((ViewGroup) view).setClipToPadding(false);
+                padding[1] = header;
+                if (!(view.getParent() instanceof ProgressiveBlurLayout)
+                        && !Boolean.TRUE.equals(view.getTag(R.id.oui_scroll_edge_fades_disabled)))
+                    ScrollEdgeFades.attach(view).setHeights(header, dp(56));
+            }
+            return;
+        }
+        if (view instanceof ViewGroup) {
+            ViewGroup group = (ViewGroup) view;
+            for (int i = 0; i < group.getChildCount(); i++)
+                padFullBleedScrollContent(group.getChildAt(i));
+        }
+    }
+
+    /** Places an interactive page overlay above the toolbar's progressive blur. */
+    public void addFloatingOverlay(@NonNull View overlay) {
+        if (overlay.getParent() instanceof ViewGroup)
+            ((ViewGroup) overlay.getParent()).removeView(overlay);
+        mFrontOverlayHost.addView(overlay, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+    }
+
+    public void removeFloatingOverlay(@NonNull View overlay) {
+        if (overlay.getParent() == mFrontOverlayHost)
+            mFrontOverlayHost.removeView(overlay);
     }
 
     @Override
@@ -509,7 +583,9 @@ public class ToolbarLayout extends LinearLayout {
     public void setExpandable(boolean expandable) {
         if (mExpandable != expandable) {
             mExpandable = expandable;
+            if (!expandable) mReserveExpandedHeader = false;
             resetAppBar();
+            mMainContainer.post(() -> padFullBleedScrollContent(mMainContainer));
         }
     }
 
@@ -538,6 +614,10 @@ public class ToolbarLayout extends LinearLayout {
         if (mExpandable) {
             mExpanded = expanded;
             mAppBarLayout.setExpanded(expanded, animate);
+            if (!animate && mReserveExpandedHeader != expanded) {
+                mReserveExpandedHeader = expanded;
+                mMainContainer.post(() -> padFullBleedScrollContent(mMainContainer));
+            }
         } else
             Log.d(TAG, "setExpanded: mExpandable is " + mExpandable);
     }

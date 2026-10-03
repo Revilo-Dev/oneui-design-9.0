@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import dev.oneuiproject.oneui.utils.IndexScrollUtils;
+import dev.oneuiproject.oneui.layout.ToolbarLayout;
 import dev.oneuiproject.oneui.widget.Separator;
 import dev.oneuiproject.oneuiexample.base.BaseFragment;
 
@@ -61,8 +62,19 @@ public class IndexScrollFragment extends BaseFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         mIndexScrollView = view.findViewById(R.id.indexscroll_view);
+        ToolbarLayout toolbar = requireActivity().findViewById(R.id.drawerLayout);
+        toolbar.addFloatingOverlay(mIndexScrollView);
         initListView(view);
         initIndexScroll();
+    }
+
+    @Override public void onDestroyView() {
+        ToolbarLayout toolbar = requireActivity().findViewById(R.id.drawerLayout);
+        if (toolbar != null && mIndexScrollView != null)
+            toolbar.removeFloatingOverlay(mIndexScrollView);
+        mIndexScrollView = null;
+        mListView = null;
+        super.onDestroyView();
     }
 
     @Override
@@ -138,7 +150,9 @@ public class IndexScrollFragment extends BaseFragment {
         mListView.seslSetFillBottomEnabled(true);
         mListView.seslSetLastRoundedCorner(true);
         mListView.seslSetIndexTipEnabled(true);
-        mListView.seslSetGoToTopEnabled(true);
+        mListView.seslSetGoToTopEnabled(false);
+        ((dev.oneuiproject.oneui.widget.FloatingScrollToTopButton)
+                view.findViewById(R.id.indexscroll_scroll_top)).bind(mListView);
         mListView.seslSetSmoothScrollEnabled(true);
     }
 

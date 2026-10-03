@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -25,13 +26,21 @@ public class TabsFragment extends BaseFragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         FloatingNavigationBar bar = view.findViewById(R.id.tabs_floating_nav);
+        bar.setSelectedIcon(R.id.nav_grid, R.drawable.sample_nav_grid_filled);
+        bar.setSelectedIcon(R.id.nav_list, R.drawable.list);
+        bar.setSelectedIcon(R.id.nav_cards, R.drawable.credit_card);
+        bar.setSelectedIcon(R.id.nav_settings, R.drawable.settings);
         NavigationPageContainer pages = view.findViewById(R.id.nav_pages);
+        NavigationDemoPages.populate(mContext,
+                (FrameLayout) view.findViewById(R.id.nav_grid),
+                (FrameLayout) view.findViewById(R.id.nav_list),
+                (FrameLayout) view.findViewById(R.id.nav_cards));
         GridMenuDialog menu = new GridMenuDialog(mContext);
         menu.inflateMenu(R.menu.sample3_tabs_grid_menu);
         menu.setOnItemClickListener(item -> true);
 
         bar.bindPages(pages);
-        if (savedInstanceState == null) bar.setSelectedItemId(R.id.nav_settings);
+        if (savedInstanceState == null) bar.setSelectedItemId(R.id.nav_grid);
         lastDestination = bar.getSelectedItemId();
         bar.setOnItemSelectedListener(itemId -> {
             if (itemId == R.id.nav_menu) {

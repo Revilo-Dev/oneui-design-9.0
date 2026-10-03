@@ -17,6 +17,9 @@
         <attr name="blurBottom" format="boolean" />
         <attr name="fadeColor" format="color" />
     </declare-styleable>
+    <declare-styleable name="DrawerLayout">
+        <attr name="pushContentOnOpen" format="boolean" />
+    </declare-styleable>
     <declare-styleable name="FloatingNavigationBar">
         <attr name="navigationMenu" format="reference" />
         <attr name="showLabels" format="boolean" />
@@ -38,6 +41,18 @@
         <attr name="sliderTrackColor" format="color" />
         <attr name="thumbFillColor" format="color" />
         <attr name="leadingIcon" format="reference" />
+    </declare-styleable>
+    <declare-styleable name="OneUIThickSlider">
+        <attr name="thickVertical" format="boolean" />
+        <attr name="thickValue" format="integer" />
+        <attr name="thickMinValue" format="integer" />
+        <attr name="thickMaxValue" format="integer" />
+        <attr name="thickWarningValue" format="integer" />
+        <attr name="thickIcon" format="reference" />
+        <attr name="thickShowNumber" format="boolean" />
+        <attr name="thickShowMenuButton" format="boolean" />
+        <attr name="thickActiveColor" format="color" />
+        <attr name="thickTrackColor" format="color" />
     </declare-styleable>
     <declare-styleable name="FloatingToolbar">
         <attr name="toolbarMenu" format="reference" />

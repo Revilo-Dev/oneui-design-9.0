@@ -1,7 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.recyclerview.widget.RecyclerView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/oui_background_color"
-    tools:viewBindingIgnore="true" />
+    tools:viewBindingIgnore="true">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/icons_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingBottom="88dp" />
+
+    <TextView
+        android:id="@+id/icons_empty"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="No matching icons"
+        android:textColor="@color/oui_primary_text_color"
+        android:visibility="gone" />
+
+    <dev.oneuiproject.oneui.widget.FloatingSearchBar
+        android:id="@+id/icons_floating_search"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_gravity="bottom"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginBottom="16dp" />
+
+    <dev.oneuiproject.oneui.widget.FloatingScrollToTopButton
+        android:id="@+id/icons_scroll_top"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="88dp" />
+
+</FrameLayout>

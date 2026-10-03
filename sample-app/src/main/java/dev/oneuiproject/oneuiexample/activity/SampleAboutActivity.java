@@ -12,6 +12,7 @@ import com.sec.sesl.tester.R;
 
 import dev.oneuiproject.oneui.layout.AppInfoLayout;
 import dev.oneuiproject.oneui.widget.Toast;
+import dev.oneuiproject.oneui.widget.MaterialColorSettings;
 
 public class SampleAboutActivity extends AppCompatActivity {
     private AppInfoLayout appInfoLayout;
@@ -19,6 +20,7 @@ public class SampleAboutActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        MaterialColorSettings.applyTheme(this);
         setContentView(R.layout.sample3_activity_about);
 
         appInfoLayout = findViewById(R.id.appInfoLayout);

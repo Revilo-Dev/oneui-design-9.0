@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="oui_slider_warning_color">#FF695E</color>
+    <color name="oui_slider_warning_color">@color/oui_functional_red_color</color>
+    <color name="oui_slider_warning_area_color">#FFF4C2C0</color>
 
     <color name="oui_floating_nav_surface">#FFFFFFFF</color>
     <color name="oui_floating_nav_glass">#F4FFFFFF</color>
@@ -12,7 +13,7 @@
     <color name="oui_floating_toolbar_dark">#FF2E2E30</color>
     <color name="oui_floating_toolbar_glass_light">#F4FFFFFF</color>
     <color name="oui_floating_toolbar_glass_dark">#F22E2E30</color>
-    <color name="oui_grid_menu_icon_circle">#FFFFFFFF</color>
+    <color name="oui_grid_menu_icon_circle">#FFE8E8EB</color>
     <color name="oui_grid_menu_glass">@color/oui_glass_surface</color>
     <color name="oui_floating_toolbar_light_text">#FF17151A</color>
     <color name="oui_floating_toolbar_dark_text">#FFF9F7FA</color>
@@ -67,6 +68,7 @@
     <!-- DrawerLayout -->
     <color name="oui_glass_surface">#F4FFFFFF</color>
     <color name="oui_drawerlayout_drawer_dim_color">#33000000</color>
+    <color name="oui_drawer_glass_tint">#C8FFFFFF</color>
     <color name="oui_drawerlayout_header_icon_color">#ff676768</color>
 
     <!-- AppInfoLayout -->

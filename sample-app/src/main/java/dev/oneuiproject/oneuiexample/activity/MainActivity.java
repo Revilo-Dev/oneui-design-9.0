@@ -32,6 +32,7 @@ import java.util.List;
 import dev.oneuiproject.oneui.utils.ActivityUtils;
 import dev.oneuiproject.oneui.widget.FloatingSearchBar;
 import dev.oneuiproject.oneui.widget.DialogBlur;
+import dev.oneuiproject.oneui.widget.MaterialColorSettings;
 import dev.oneuiproject.oneui.widget.TipPopup;
 import dev.oneuiproject.oneuiexample.base.FragmentInfo;
 import dev.oneuiproject.oneuiexample.fragment.AppPickerFragment;
@@ -62,6 +63,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        MaterialColorSettings.applyTheme(this);
         mBinding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(mBinding.getRoot());
         getSupportFragmentManager().registerFragmentLifecycleCallbacks(

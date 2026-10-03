@@ -43,7 +43,9 @@ public final class TopActionSurfaceDrawable extends Drawable {
 
     public void setBlurEnabled(boolean enabled) { blurEnabled = enabled; invalidateSelf(); }
     public void setTintColor(@Nullable Integer color) { tintColor = color; invalidateSelf(); }
-    public void setRadius(float pixels) { radius = pixels; invalidateSelf(); }
+    public void setRadius(float pixels) {
+        if (radius != pixels) { radius = pixels; invalidateSelf(); }
+    }
 
     @Override public void draw(@NonNull Canvas canvas) {
         Rect bounds = getBounds();
@@ -51,7 +53,8 @@ public final class TopActionSurfaceDrawable extends Drawable {
         int save = canvas.save();
         path.reset();
         path.addRoundRect(bounds.left, bounds.top, bounds.right, bounds.bottom,
-                radius, radius, Path.Direction.CW);
+                Math.min(radius, bounds.height() / 2f),
+                Math.min(radius, bounds.height() / 2f), Path.Direction.CW);
         canvas.clipPath(path);
         boolean effectiveBlur = blurEnabled && BlurSettings.isEnabled(host.getContext());
         if (effectiveBlur && source.isAttachedToWindow() && !host.isInEditMode()) {
@@ -87,7 +90,13 @@ public final class TopActionSurfaceDrawable extends Drawable {
         host.getLocationInWindow(here);
         source.getLocationInWindow(there);
         sample.translate(there[0] - here[0], there[1] - here[1]);
-        source.draw(sample);
+        try {
+            source.draw(sample);
+        } catch (IndexOutOfBoundsException badDrawOrder) {
+            bitmap.recycle();
+            bitmap = null;
+            return;
+        }
         bitmap.getPixels(sourcePixels, 0, width, 0, 0, width, height);
         for (int y = 0; y < height; y++) for (int x = 0; x < width; x++) {
             int a = 0, r = 0, g = 0, b = 0;

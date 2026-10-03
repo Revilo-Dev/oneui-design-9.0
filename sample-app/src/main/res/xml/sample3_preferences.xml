@@ -31,6 +31,12 @@
             android:summary="Blur floating bars, search, dialogs and scroll edges"
             android:defaultValue="true" />
 
+        <SwitchPreferenceCompat
+            android:key="global_material_color_palette"
+            android:title="Use material color palette"
+            android:summary="Use your wallpaper colors for controls across the app"
+            android:defaultValue="false" />
+
     </PreferenceCategory>
 
     <PreferenceCategory>

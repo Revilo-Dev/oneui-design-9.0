@@ -66,11 +66,24 @@ public final class ScrollEdgeFades {
         return fades;
     }
 
+    /** Opt a particular scrolling view out of automatic edge fades. */
+    public static void setAutoAttachEnabled(@NonNull View scrollable, boolean enabled) {
+        scrollable.setTag(R.id.oui_scroll_edge_fades_disabled, !enabled);
+        ScrollEdgeFades existing = (ScrollEdgeFades) scrollable.getTag(R.id.oui_scroll_edge_fades);
+        if (!enabled && existing != null) existing.detach();
+    }
+
+    private static boolean shouldAutoAttach(View view) {
+        return !(view.getParent() instanceof ProgressiveBlurLayout)
+                && !Boolean.TRUE.equals(view.getTag(R.id.oui_scroll_edge_fades_disabled));
+    }
+
     /** Installs on every vertical scrolling descendant, including newly visible pages. */
     public static void attachTree(@NonNull View root) {
         if (root instanceof RecyclerView || root instanceof NestedScrollView
                 || root instanceof ScrollView || root instanceof AbsListView) {
-            if (!(root.getParent() instanceof ProgressiveBlurLayout)) attach(root);
+            if (shouldAutoAttach(root)) attach(root);
+            return;
         }
         if (root instanceof ViewGroup) {
             ViewGroup group = (ViewGroup) root;
@@ -82,8 +95,9 @@ public final class ScrollEdgeFades {
     public static void attachTree(@NonNull View root, int surfaceColor) {
         if (root instanceof RecyclerView || root instanceof NestedScrollView
                 || root instanceof ScrollView || root instanceof AbsListView) {
-            if (!(root.getParent() instanceof ProgressiveBlurLayout))
+            if (shouldAutoAttach(root))
                 attach(root).setColor(surfaceColor);
+            return;
         }
         if (root instanceof ViewGroup) {
             ViewGroup group = (ViewGroup) root;

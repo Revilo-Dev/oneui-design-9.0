@@ -12,6 +12,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Parcel;
+import android.os.Build;
 import android.os.Parcelable;
 import android.util.AttributeSet;
 import android.view.Gravity;
@@ -84,9 +85,9 @@ public class FloatingNavigationBar extends LinearLayout {
         setClipToPadding(false);
         setSaveEnabled(true);
         BlurSettings.observe(this);
-        itemWidth = dp(64);
-        barHeight = dp(58);
-        selectionInset = dp(4);
+        itemWidth = dp(68);
+        barHeight = dp(60);
+        selectionInset = dp(1);
         lightShadowElevation = dp(5);
         int menuRes = 0;
         if (attrs != null) {
@@ -155,6 +156,22 @@ public class FloatingNavigationBar extends LinearLayout {
         updateItemWidths();
         if (selectedId == View.NO_ID) selectedId = id;
         updateSelection();
+    }
+
+    /** Optional filled icon shown only while the destination is selected. */
+    public void setSelectedIcon(int id, @DrawableRes int iconRes) {
+        setSelectedIcon(id, getContext().getDrawable(iconRes));
+    }
+
+    public void setSelectedIcon(int id, @Nullable Drawable icon) {
+        for (NavigationItem item : items) {
+            if (item.id == id) {
+                item.selectedIcon = icon;
+                updateSelection();
+                return;
+            }
+        }
+        throw new IllegalArgumentException("Unknown navigation item ID");
     }
 
     public void setSelectedItemId(int id) {
@@ -342,11 +359,26 @@ public class FloatingNavigationBar extends LinearLayout {
         int secondary = getResources().getColor(R.color.oui_floating_nav_secondary, getContext().getTheme());
         int selectedColor = selectedColorOverride != null ? selectedColorOverride
                 : getResources().getColor(R.color.oui_floating_nav_selected, getContext().getTheme());
+        if (selectedColorOverride == null && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+                && MaterialColorSettings.isEnabled(getContext())) {
+            int accent = MaterialColorSettings.accentColor(getContext(), selectedColor);
+            selectedColor = (accent & 0x00ffffff) | 0x55000000;
+        }
         for (NavigationItem item : items) {
             boolean selected = item.id == selectedId;
             item.view.setSelected(selected);
+            Drawable icon = selected && item.selectedIcon != null
+                    ? item.selectedIcon : item.defaultIcon;
+            if (item.icon.getDrawable() != icon) item.icon.setImageDrawable(icon);
             item.label.setVisibility(showLabels ? VISIBLE : GONE);
-            item.icon.setVisibility(showIcons && item.icon.getDrawable() != null ? VISIBLE : GONE);
+            item.icon.setVisibility(showIcons && icon != null ? VISIBLE : GONE);
+            LinearLayout.LayoutParams labelParams = (LinearLayout.LayoutParams)
+                    item.label.getLayoutParams();
+            int labelGap = showIcons && icon != null && showLabels ? dp(4) : 0;
+            if (labelParams.topMargin != labelGap) {
+                labelParams.topMargin = labelGap;
+                item.label.setLayoutParams(labelParams);
+            }
             item.label.setTextColor(selected ? primary : secondary);
             item.icon.setColorFilter(selected ? primary : secondary);
         }
@@ -506,9 +538,12 @@ public class FloatingNavigationBar extends LinearLayout {
         final LinearLayout view;
         final ImageView icon;
         final TextView label;
+        final Drawable defaultIcon;
+        Drawable selectedIcon;
 
         NavigationItem(int id, Drawable drawable, CharSequence title) {
             this.id = id;
+            defaultIcon = drawable;
             view = new LinearLayout(getContext());
             view.setOrientation(VERTICAL);
             view.setGravity(Gravity.CENTER);
@@ -566,7 +601,7 @@ public class FloatingNavigationBar extends LinearLayout {
             label.setGravity(Gravity.CENTER);
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LayoutParams.MATCH_PARENT,
                     LayoutParams.WRAP_CONTENT);
-            lp.topMargin = dp(2);
+            lp.topMargin = dp(4);
             view.addView(label, lp);
         }
     }
@@ -623,8 +658,8 @@ public class FloatingNavigationBar extends LinearLayout {
 
         @Override protected void onDraw(Canvas canvas) {
             super.onDraw(canvas);
-            if (initialized) canvas.drawRoundRect(highlightLeft, selectionInset,
-                    highlightLeft + highlightWidth, getHeight() - selectionInset,
+            if (initialized) canvas.drawRoundRect(highlightLeft - dp(3), selectionInset,
+                    highlightLeft + highlightWidth + dp(3), getHeight() - selectionInset,
                     (getHeight() - selectionInset * 2) / 2f,
                     (getHeight() - selectionInset * 2) / 2f, highlightPaint);
         }

@@ -2,5 +2,9 @@
 <resources>
 
     <color name="about_page_secondary_text_color">#ff747474</color>
+    <color name="icons_preview_backplate">#FF77777D</color>
+    <color name="nav_demo_card_surface">#FF1D1D21</color>
+    <color name="nav_demo_list_surface">#FF101013</color>
+    <color name="nav_demo_icon_background">#FF29292C</color>
 
 </resources>

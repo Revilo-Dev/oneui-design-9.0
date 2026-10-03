@@ -34,6 +34,7 @@ import dev.oneuiproject.oneui.utils.ViewUtils;
 import dev.oneuiproject.oneui.utils.internal.ToolbarLayoutUtils;
 import dev.oneuiproject.oneui.widget.Toast;
 import dev.oneuiproject.oneui.widget.StickyToolbarControls;
+import dev.oneuiproject.oneui.widget.MaterialColorSettings;
 
 public class AboutActivity extends AppCompatActivity
         implements View.OnClickListener {
@@ -48,6 +49,7 @@ public class AboutActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        MaterialColorSettings.applyTheme(this);
         mBinding = ActivityAboutBinding.inflate(getLayoutInflater());
         setContentView(mBinding.getRoot());
         mBottomContent = mBinding.aboutBottomContent;

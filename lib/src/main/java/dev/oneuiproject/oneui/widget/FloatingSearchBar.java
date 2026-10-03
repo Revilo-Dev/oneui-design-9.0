@@ -2,6 +2,9 @@ package dev.oneuiproject.oneui.widget;
 
 import android.content.Context;
 import android.graphics.Color;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.content.res.ColorStateList;
 import android.graphics.drawable.Drawable;
 import android.graphics.Outline;
@@ -36,6 +39,15 @@ public class FloatingSearchBar extends FrameLayout {
     private final ImageView searchIcon;
     private final EditText input;
     private final ImageButton close;
+    private final Paint border = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final RectF borderBounds = new RectF();
+    private final Runnable refreshBlur = new Runnable() {
+        @Override public void run() {
+            if (!isAttachedToWindow() || !isShown()) return;
+            surface.refreshCapture();
+            postDelayed(this, 32);
+        }
+    };
     private Listener listener;
     private Runnable closeRequested;
     private boolean open;
@@ -58,6 +70,9 @@ public class FloatingSearchBar extends FrameLayout {
             }
         });
         setElevation(dp(10));
+        border.setStyle(Paint.Style.STROKE);
+        border.setStrokeWidth(Math.max(0.4f, getResources().getDisplayMetrics().density * 0.25f));
+        border.setColor(0x60FFFFFF);
         surface = new GlassSurfaceView(context);
         surface.setCornerRadius(dp(28));
         addView(surface, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
@@ -65,7 +80,7 @@ public class FloatingSearchBar extends FrameLayout {
         LinearLayout row = new LinearLayout(context);
         row.setGravity(Gravity.CENTER_VERTICAL);
         row.setOrientation(LinearLayout.HORIZONTAL);
-        addView(row, new LayoutParams(LayoutParams.MATCH_PARENT, minHeight));
+        addView(row, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 
         searchIcon = new ImageView(context);
         searchIcon.setImageResource(R.drawable.oui_ic_search);
@@ -80,6 +95,9 @@ public class FloatingSearchBar extends FrameLayout {
 
         input = new EditText(context);
         input.setSingleLine(true);
+        input.setGravity(Gravity.CENTER_VERTICAL);
+        input.setIncludeFontPadding(false);
+        input.setPadding(0, 0, 0, 0);
         input.setTextSize(16);
         input.setTextColor(primary);
         input.setHintTextColor(context.getColor(R.color.oui_floating_nav_secondary));
@@ -102,7 +120,8 @@ public class FloatingSearchBar extends FrameLayout {
 
         close = new ImageButton(context);
         close.setImageResource(R.drawable.oui_ic_close);
-        close.setImageTintList(iconTint);
+        close.setImageTintList(ColorStateList.valueOf(
+                context.getColor(R.color.oui_floating_nav_secondary)));
         close.setContentDescription("Close search");
         TypedValue ripple = new TypedValue();
         context.getTheme().resolveAttribute(android.R.attr.selectableItemBackgroundBorderless,
@@ -116,6 +135,35 @@ public class FloatingSearchBar extends FrameLayout {
         closeParams.leftMargin = dp(4);
         closeParams.rightMargin = dp(8);
         row.addView(close, closeParams);
+    }
+
+    @Override protected void dispatchDraw(Canvas canvas) {
+        super.dispatchDraw(canvas);
+        float halfStroke = border.getStrokeWidth() / 2f;
+        borderBounds.set(halfStroke, halfStroke,
+                getWidth() - halfStroke, getHeight() - halfStroke);
+        canvas.drawRoundRect(borderBounds, getHeight() / 2f, getHeight() / 2f, border);
+    }
+
+    @Override protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        scheduleBlurRefresh();
+    }
+
+    @Override protected void onDetachedFromWindow() {
+        removeCallbacks(refreshBlur);
+        super.onDetachedFromWindow();
+    }
+
+    @Override protected void onVisibilityChanged(View changedView, int visibility) {
+        super.onVisibilityChanged(changedView, visibility);
+        scheduleBlurRefresh();
+    }
+
+    private void scheduleBlurRefresh() {
+        removeCallbacks(refreshBlur);
+        if (isAttachedToWindow() && isShown())
+            post(refreshBlur);
     }
 
     public void setListener(@Nullable Listener callback) { listener = callback; }
@@ -137,6 +185,13 @@ public class FloatingSearchBar extends FrameLayout {
     public GlassSurfaceView getSurface() { return surface; }
     public EditText getInput() { return input; }
     public ImageButton getCloseButton() { return close; }
+    /** Hide the exit action for a search field that stays on its page. */
+    public void setCloseButtonVisible(boolean visible) {
+        close.setVisibility(visible ? VISIBLE : GONE);
+        LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) input.getLayoutParams();
+        params.rightMargin = visible ? 0 : dp(20);
+        input.setLayoutParams(params);
+    }
     public ImageView getSearchIcon() { return searchIcon; }
     public void setHint(CharSequence hint) { input.setHint(hint); }
     public void setSearchIcon(@Nullable Drawable icon) { searchIcon.setImageDrawable(icon); }

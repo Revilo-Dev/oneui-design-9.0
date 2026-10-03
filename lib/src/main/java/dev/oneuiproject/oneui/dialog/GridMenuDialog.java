@@ -1,10 +1,13 @@
 package dev.oneuiproject.oneui.dialog;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.Build;
 import android.os.Message;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -13,6 +16,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
+import android.view.Gravity;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -35,7 +41,7 @@ import java.util.ArrayList;
 
 import dev.oneuiproject.oneui.design.R;
 import dev.oneuiproject.oneui.widget.ScrollEdgeFades;
-import dev.oneuiproject.oneui.widget.DialogBlur;
+import dev.oneuiproject.oneui.widget.GlassSurfaceView;
 
 public class GridMenuDialog extends AlertDialog {
     private static final String TAG = "GridMenuDialog";
@@ -47,18 +53,58 @@ public class GridMenuDialog extends AlertDialog {
     private ArrayList<GridMenuItem> mMenuList = new ArrayList<>();
     private OnItemClickListener mOnItemClickListener;
 
-    private LinearLayout mContentView;
+    private FrameLayout mContentView;
+    private LinearLayout mCardContent;
+    private GlassSurfaceView mCardGlass;
+    private boolean mCardBlurEnabled = true;
     private RecyclerView mGridListView;
     private GridListAdapter mAdapter;
 
     @Override protected void onStart() {
         super.onStart();
-        DialogBlur.apply(this);
+        Activity activity = findActivity(mContext);
+        if (activity != null) {
+            mCardGlass.setSourceView(activity.findViewById(android.R.id.content));
+            mCardGlass.setCaptureWindow(activity.getWindow());
+        }
+        mCardGlass.setBlurEnabled(mCardBlurEnabled);
+        Window window = getWindow();
+        if (window != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                window.setBackgroundBlurRadius(0);
+            WindowManager.LayoutParams params = window.getAttributes();
+            params.gravity = Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL;
+            params.width = mContext.getResources().getDisplayMetrics().widthPixels - dp(32);
+            params.height = WindowManager.LayoutParams.WRAP_CONTENT;
+            params.y = dp(16);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S)
+                params.setBlurBehindRadius(0);
+            window.setAttributes(params);
+            window.clearFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND);
+            View decor = window.getDecorView();
+            decor.animate().cancel();
+            decor.setAlpha(0f);
+            decor.setTranslationY(dp(44));
+            decor.animate().alpha(1f).translationY(0f).setDuration(220).start();
+        }
     }
 
-    @Override protected void onStop() {
-        DialogBlur.release(this);
-        super.onStop();
+    /** Blur just the rounded card. The global BlurSettings switch still applies. */
+    public void setCardBlurEnabled(boolean enabled) {
+        mCardBlurEnabled = enabled;
+        if (mCardGlass != null) mCardGlass.setBlurEnabled(enabled);
+    }
+
+    private static Activity findActivity(Context context) {
+        while (context instanceof ContextWrapper) {
+            if (context instanceof Activity) return (Activity) context;
+            context = ((ContextWrapper) context).getBaseContext();
+        }
+        return null;
+    }
+
+    private int dp(float value) {
+        return Math.round(value * mContext.getResources().getDisplayMetrics().density);
     }
 
     public class GridMenuItem {
@@ -163,8 +209,20 @@ public class GridMenuDialog extends AlertDialog {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         LayoutInflater inflater = LayoutInflater.from(mContext);
-        mContentView = (LinearLayout) inflater
+        mContentView = (FrameLayout) inflater
                 .inflate(R.layout.oui_dialog_grid_menu, null);
+        mCardContent = mContentView.findViewById(R.id.grid_menu_content);
+        mCardGlass = mContentView.findViewById(R.id.grid_menu_glass);
+        mCardGlass.setCornerRadius(dp(30));
+        mCardContent.addOnLayoutChangeListener((v, left, top, right, bottom,
+                oldLeft, oldTop, oldRight, oldBottom) -> {
+            ViewGroup.LayoutParams glassParams = mCardGlass.getLayoutParams();
+            int height = bottom - top;
+            if (glassParams.height != height) {
+                glassParams.height = height;
+                mCardGlass.setLayoutParams(glassParams);
+            }
+        });
         resetContentPadding();
 
         mGridListView = mContentView.findViewById(R.id.grid_menu_view);
@@ -222,7 +280,7 @@ public class GridMenuDialog extends AlertDialog {
     }
 
     private void resetContentPadding() {
-        if (mContentView != null) {
+        if (mCardContent != null) {
             final int horizontalPadding = mContext.getResources()
                     .getDimensionPixelSize(R.dimen.oui_grid_menu_dialog_horizontal_padding);
             final int verticalPadding = mContext.getResources()
@@ -230,7 +288,7 @@ public class GridMenuDialog extends AlertDialog {
 
             final boolean hasMessage
                     = mMessage != null && mMessage.length() > 0;
-            mContentView.setPaddingRelative(
+            mCardContent.setPaddingRelative(
                     horizontalPadding,
                     hasMessage ? 0 : verticalPadding,
                     horizontalPadding,

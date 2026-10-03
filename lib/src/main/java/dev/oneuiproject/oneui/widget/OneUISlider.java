@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.RectF;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -40,6 +41,7 @@ public class OneUISlider extends View {
     private int trackColor;
     private int thumbFillColor;
     private int tickColor;
+    private int warningAreaColor;
     private Drawable leadingIcon;
     private OnValueChangeListener listener;
 
@@ -54,6 +56,7 @@ public class OneUISlider extends View {
         trackColor = color(R.color.oui_slider_track_color);
         thumbFillColor = color(R.color.oui_background_color);
         tickColor = color(R.color.oui_slider_tick_color);
+        warningAreaColor = color(R.color.oui_slider_warning_area_color);
         if (attrs != null) {
             TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.OneUISlider,
                     defStyleAttr, 0);
@@ -104,6 +107,7 @@ public class OneUISlider extends View {
     public void setFillEnabled(boolean enabled) { fillEnabled = enabled; invalidate(); }
     public void setHapticEnabled(boolean enabled) { hapticEnabled = enabled; }
     public void setWarningValue(int threshold) { warningValue = threshold; invalidate(); }
+    public void setWarningAreaColor(int color) { warningAreaColor = color; invalidate(); }
     public void setActiveColor(int color) { activeColor = color; invalidate(); }
     public int getActiveColor() { return activeColor; }
     public void setTrackColor(int color) { trackColor = color; invalidate(); }
@@ -156,6 +160,17 @@ public class OneUISlider extends View {
         track.set(start, centerY - radius, end, centerY + radius);
         paint.setColor(trackColor);
         canvas.drawRoundRect(track, radius, radius, paint);
+        if (warningValue > minValue && warningValue < maxValue) {
+            float warningX = start + (end - start) * (warningValue - minValue)
+                    / (maxValue - minValue);
+            int saved = canvas.save();
+            Path trackClip = new Path();
+            trackClip.addRoundRect(track, radius, radius, Path.Direction.CW);
+            canvas.clipPath(trackClip);
+            paint.setColor(warningAreaColor);
+            canvas.drawRect(warningX, track.top, track.right, track.bottom, paint);
+            canvas.restoreToCount(saved);
+        }
         if (fillEnabled && thumbX > start) {
             track.right = thumbX;
             paint.setColor(currentActiveColor());
@@ -196,6 +211,18 @@ public class OneUISlider extends View {
         paint.setColor(trackColor);
         canvas.drawRoundRect(centerX - radius, top, centerX + radius, bottom,
                 radius, radius, paint);
+        if (warningValue > minValue && warningValue < maxValue) {
+            float warningY = bottom - (bottom - top) * (warningValue - minValue)
+                    / (maxValue - minValue);
+            int saved = canvas.save();
+            Path trackClip = new Path();
+            trackClip.addRoundRect(centerX - radius, top, centerX + radius, bottom,
+                    radius, radius, Path.Direction.CW);
+            canvas.clipPath(trackClip);
+            paint.setColor(warningAreaColor);
+            canvas.drawRect(centerX - radius, top, centerX + radius, warningY, paint);
+            canvas.restoreToCount(saved);
+        }
         if (fillEnabled && thumbY < bottom) {
             paint.setColor(currentActiveColor());
             canvas.drawRoundRect(centerX - radius, thumbY, centerX + radius, bottom,

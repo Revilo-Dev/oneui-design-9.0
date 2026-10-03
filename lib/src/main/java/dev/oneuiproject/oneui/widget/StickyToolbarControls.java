@@ -6,11 +6,15 @@ import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewOutlineProvider;
+import android.widget.AbsListView;
+import android.widget.ScrollView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.ActionMenuView;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.widget.NestedScrollView;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.AppBarLayout;
 import java.util.IdentityHashMap;
@@ -33,7 +37,7 @@ public final class StickyToolbarControls {
     private int navigationMarginStart, navigationMarginEnd;
     private float navigationTranslationY;
     private int actionPaddingLeft, actionPaddingTop, actionPaddingRight, actionPaddingBottom;
-    private int actionsMarginStart, actionsMarginEnd;
+    private int actionsMarginStart, actionsMarginEnd, actionsHeight;
     private float actionsTranslationY;
     private boolean enabled = true;
     private boolean active;
@@ -56,12 +60,12 @@ public final class StickyToolbarControls {
         this.content = content;
         toolbarBackground = toolbar.getBackground();
         horizontalInset = dp(16);
-        verticalOffset = dp(6);
+        verticalOffset = 0;
         collapseTolerance = dp(2);
-        itemWidth = dp(48);
-        surfacePadding = dp(3);
-        cornerRadius = dp(25);
-        shadowElevation = dp(5);
+        itemWidth = dp(44);
+        surfacePadding = dp(4);
+        cornerRadius = dp(26);
+        shadowElevation = dp(3);
         toolbar.setClipChildren(false);
         toolbar.setClipToPadding(false);
         appBar.addOnOffsetChangedListener((bar, verticalOffset) -> {
@@ -97,7 +101,6 @@ public final class StickyToolbarControls {
     public void setSurfacePadding(int pixels) { surfacePadding = Math.max(0, pixels); refresh(); }
     public void setCornerRadius(int pixels) {
         cornerRadius = Math.max(0, pixels);
-        if (navigationSurface != null) navigationSurface.setRadius(cornerRadius);
         if (actionsSurface != null) actionsSurface.setRadius(cornerRadius);
         if (navigation != null) navigation.invalidateOutline();
         if (actions != null) actions.invalidateOutline();
@@ -109,6 +112,8 @@ public final class StickyToolbarControls {
         boolean shouldShow = enabled && appBar.getTotalScrollRange() > 0
                 && Math.abs(offset) >= appBar.getTotalScrollRange() - collapseTolerance
                 && (!requireContentScroll || hasScrolledContent(content));
+        boolean entering = shouldShow && !active;
+        boolean leaving = !shouldShow && active;
         if (shouldShow != active) {
             active = shouldShow;
             toolbar.setBackground(active ? null : toolbarBackground);
@@ -117,6 +122,23 @@ public final class StickyToolbarControls {
         findControls();
         styleNavigation();
         styleActions();
+        if (leaving) {
+            if (navigation != null) { navigation.animate().cancel(); navigation.setAlpha(1f); }
+            if (actions != null) { actions.animate().cancel(); actions.setAlpha(1f); }
+        }
+        if (entering) {
+            // Animate the actual toolbar controls when their floating surfaces appear.
+            if (navigation != null && toolbar.getNavigationIcon() != null) {
+                navigation.animate().cancel();
+                navigation.setAlpha(0f);
+                navigation.animate().alpha(1f).setDuration(140).start();
+            }
+            if (actions != null && actions.getChildCount() > 0) {
+                actions.animate().cancel();
+                actions.setAlpha(0f);
+                actions.animate().alpha(1f).setDuration(140).start();
+            }
+        }
         if (active) {
             if (navigation != null) navigation.invalidate();
             if (actions != null) actions.invalidate();
@@ -152,6 +174,7 @@ public final class StickyToolbarControls {
                 ViewGroup.MarginLayoutParams margins = (ViewGroup.MarginLayoutParams) child.getLayoutParams();
                 actionsMarginStart = margins.getMarginStart();
                 actionsMarginEnd = margins.getMarginEnd();
+                actionsHeight = child.getLayoutParams().height;
                 actionsTranslationY = child.getTranslationY();
                 actionsSurface = new TopActionSurfaceDrawable(child, content, cornerRadius);
                 actionsSurface.setBlurEnabled(blurEnabled);
@@ -174,6 +197,7 @@ public final class StickyToolbarControls {
             navigation.setPadding(left, top, right, bottom);
         ViewGroup.LayoutParams params = navigation.getLayoutParams();
         int size = itemWidth + surfacePadding * 2;
+        if (show) navigationSurface.setRadius(size / 2f);
         int width = show ? size : navigationWidth;
         int height = show ? size : navigationHeight;
         if (params.width != width || params.height != height) {
@@ -207,29 +231,37 @@ public final class StickyToolbarControls {
                 if (child.getVisibility() != View.VISIBLE) continue;
                 ViewGroup.LayoutParams params = child.getLayoutParams();
                 if (!originalActionSizes.containsKey(child))
-                    originalActionSizes.put(child, new int[]{params.width, child.getMinimumWidth()});
-                if (params.width != itemWidth) {
+                    originalActionSizes.put(child, new int[]{params.width, params.height,
+                            child.getMinimumWidth(), child.getMinimumHeight()});
+                if (params.width != itemWidth || params.height != itemWidth) {
                     params.width = itemWidth;
+                    params.height = itemWidth;
                     child.setLayoutParams(params);
                 }
                 child.setMinimumWidth(itemWidth);
+                child.setMinimumHeight(itemWidth);
             }
         } else if (!originalActionSizes.isEmpty()) {
             for (Map.Entry<View, int[]> entry : originalActionSizes.entrySet()) {
                 View child = entry.getKey();
                 int[] size = entry.getValue();
                 ViewGroup.LayoutParams childParams = child.getLayoutParams();
-                if (childParams != null && childParams.width != size[0]) {
+                if (childParams != null && (childParams.width != size[0]
+                        || childParams.height != size[1])) {
                     childParams.width = size[0];
+                    childParams.height = size[1];
                     child.setLayoutParams(childParams);
                 }
-                child.setMinimumWidth(size[1]);
+                child.setMinimumWidth(size[2]);
+                child.setMinimumHeight(size[3]);
             }
             originalActionSizes.clear();
         }
         ViewGroup.LayoutParams params = actions.getLayoutParams();
-        if (params.width != ViewGroup.LayoutParams.WRAP_CONTENT) {
+        int height = show ? itemWidth + surfacePadding * 2 : actionsHeight;
+        if (params.width != ViewGroup.LayoutParams.WRAP_CONTENT || params.height != height) {
             params.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+            params.height = height;
             actions.setLayoutParams(params);
         }
         setMargins(actions, show, actionsMarginStart, actionsMarginEnd);
@@ -252,7 +284,8 @@ public final class StickyToolbarControls {
         if (show) {
             view.setOutlineProvider(new ViewOutlineProvider() {
                 @Override public void getOutline(View target, Outline outline) {
-                    outline.setRoundRect(0, 0, target.getWidth(), target.getHeight(), cornerRadius);
+                    outline.setRoundRect(0, 0, target.getWidth(), target.getHeight(),
+                            target == navigation ? target.getHeight() / 2f : cornerRadius);
                 }
             });
             int mode = toolbar.getResources().getConfiguration().uiMode
@@ -269,6 +302,8 @@ public final class StickyToolbarControls {
     private boolean hasScrolledContent(View view) {
         if (view.getVisibility() != View.VISIBLE) return false;
         if (view.canScrollVertically(-1)) return true;
+        if (view instanceof RecyclerView || view instanceof NestedScrollView
+                || view instanceof ScrollView || view instanceof AbsListView) return false;
         if (view instanceof ViewGroup) {
             ViewGroup group = (ViewGroup) view;
             for (int i = 0; i < group.getChildCount(); i++)

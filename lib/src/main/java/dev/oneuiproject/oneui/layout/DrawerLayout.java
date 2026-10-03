@@ -41,6 +41,7 @@ import java.util.Locale;
 import dev.oneuiproject.oneui.design.R;
 import dev.oneuiproject.oneui.utils.ViewUtils;
 import dev.oneuiproject.oneui.widget.GlassSurfaceView;
+import dev.oneuiproject.oneui.widget.BlurSettings;
 import dev.oneuiproject.oneui.widget.ScrollEdgeFades;
 
 /**
@@ -84,10 +85,18 @@ public class DrawerLayout extends ToolbarLayout {
     private FrameLayout mDrawerContainer;
     private float scrimAlpha;
     private int systemBarsColor;
+    private boolean pushContentOnOpen;
 
     public DrawerLayout(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         initDrawer();
+        TypedArray drawerAttrs = context.obtainStyledAttributes(attrs, R.styleable.DrawerLayout);
+        try {
+            pushContentOnOpen = drawerAttrs.getBoolean(
+                    R.styleable.DrawerLayout_pushContentOnOpen, false);
+        } finally {
+            drawerAttrs.recycle();
+        }
 
         if (!isInEditMode()) {
             mActivity.getOnBackPressedDispatcher().addCallback(mOnBackPressedCallback);
@@ -131,6 +140,12 @@ public class DrawerLayout extends ToolbarLayout {
         mDrawerItems = findViewById(R.id.drawerlayout_items);
         GlassSurfaceView glass = findViewById(R.id.drawerlayout_glass);
         glass.setSourceView(mToolbarContent);
+        glass.setBlurEnabled(true);
+        Runnable updateGlassTint = () -> glass.setTintColor(mContext.getColor(
+                BlurSettings.isEnabled(mContext) ? R.color.oui_drawer_glass_tint
+                        : R.color.oui_floating_nav_surface));
+        updateGlassTint.run();
+        BlurSettings.observe(glass, updateGlassTint);
         glass.setCornerRadius(getResources().getDisplayMetrics().density * 28);
 
         mHeaderView = mDrawerContent.findViewById(R.id.drawerlayout_default_header);
@@ -403,6 +418,16 @@ public class DrawerLayout extends ToolbarLayout {
         }
     }
 
+    /** Opts into the older drawer style that shifts the app beside the panel. */
+    public void setPushContentOnOpen(boolean push) {
+        if (pushContentOnOpen == push) return;
+        pushContentOnOpen = push;
+        mDrawerListener.onDrawerSlide(mDrawerContent,
+                mDrawer.isDrawerOpen(mDrawerContent) ? 1f : 0f);
+    }
+
+    public boolean isPushContentOnOpen() { return pushContentOnOpen; }
+
     private class DrawerOutlineProvider extends ViewOutlineProvider {
         private int mCornerRadius;
 
@@ -430,8 +455,11 @@ public class DrawerLayout extends ToolbarLayout {
             if (mIsRtl) slideX *= -1;
             drawerView.setTranslationX((mIsRtl ? -1 : 1)
                     * getResources().getDisplayMetrics().density * 12 * slideOffset);
-            if (translationView != null) translationView.setTranslationX(slideX);
-            else mToolbarContent.setTranslationX(slideX);
+            drawerView.setAlpha(slideOffset);
+            if (translationView != null) translationView.setTranslationX(
+                    pushContentOnOpen ? slideX : 0f);
+            mToolbarContent.setTranslationX(pushContentOnOpen && translationView == null
+                    ? slideX : 0f);
 
             float[] hsv = new float[3];
             Color.colorToHSV(systemBarsColor, hsv);

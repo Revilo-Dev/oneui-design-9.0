@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="OneUIMaterialPaletteOverlay">
+        <item name="colorPrimary">@android:color/system_accent1_600</item>
+        <item name="colorPrimaryDark">@android:color/system_accent1_700</item>
+        <item name="colorAccent">@android:color/system_accent1_600</item>
+        <item name="colorControlActivated">@android:color/system_accent1_600</item>
+        <item name="android:colorAccent">@android:color/system_accent1_600</item>
+        <item name="android:colorControlActivated">@android:color/system_accent1_600</item>
+    </style>
+</resources>

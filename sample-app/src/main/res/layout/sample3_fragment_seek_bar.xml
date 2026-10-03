@@ -63,11 +63,60 @@
                 android:layout_width="match_parent" android:layout_height="48dp"
                 android:layout_marginHorizontal="24dp" android:contentDescription="Haptic steps"
                 app:sliderValue="40" app:stepSize="20" app:showTicks="true"
-                app:sliderFillEnabled="false" app:sliderHapticEnabled="true" />
+                app:sliderFillEnabled="false" app:sliderHapticEnabled="true"
+                app:sliderWarningValue="75" />
             <dev.oneuiproject.oneui.widget.OneUISlider
                 android:layout_width="match_parent" android:layout_height="48dp"
                 android:layout_marginHorizontal="24dp" android:contentDescription="Warning threshold"
                 app:sliderValue="50" app:sliderWarningValue="70" />
+        </dev.oneuiproject.oneui.widget.RoundLinearLayout>
+        <dev.oneuiproject.oneui.widget.Separator
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Thick controls" />
+        <dev.oneuiproject.oneui.widget.RoundLinearLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:background="@color/oui_background_color"
+            android:orientation="vertical" android:padding="12dp">
+            <dev.oneuiproject.oneui.widget.OneUIThickSlider
+                android:id="@+id/slider_thick_volume"
+                android:layout_width="match_parent" android:layout_height="64dp"
+                android:contentDescription="Thick volume control"
+                app:thickIcon="@drawable/sample_slider_volume"
+                app:thickValue="30" app:thickShowNumber="true"
+                app:thickShowMenuButton="true" />
+            <dev.oneuiproject.oneui.widget.OneUIThickSlider
+                android:id="@+id/slider_thick_brightness"
+                android:layout_width="match_parent" android:layout_height="64dp"
+                android:layout_marginTop="10dp"
+                android:contentDescription="Thick brightness warning control"
+                app:thickIcon="@drawable/brightness"
+                app:thickValue="85" app:thickWarningValue="75" />
+        </dev.oneuiproject.oneui.widget.RoundLinearLayout>
+        <dev.oneuiproject.oneui.widget.Separator
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:text="Vertical thick controls" />
+        <dev.oneuiproject.oneui.widget.RoundLinearLayout
+            android:layout_width="match_parent" android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:background="@color/oui_background_color"
+            android:gravity="center" android:orientation="horizontal"
+            android:paddingVertical="12dp">
+            <dev.oneuiproject.oneui.widget.OneUIThickSlider
+                android:id="@+id/slider_thick_vertical_volume"
+                android:layout_width="80dp" android:layout_height="260dp"
+                android:layout_marginHorizontal="12dp"
+                android:contentDescription="Vertical thick volume control"
+                app:thickVertical="true" app:thickIcon="@drawable/sample_slider_volume"
+                app:thickValue="30" app:thickShowNumber="true"
+                app:thickShowMenuButton="true" />
+            <dev.oneuiproject.oneui.widget.OneUIThickSlider
+                android:layout_width="80dp" android:layout_height="260dp"
+                android:layout_marginHorizontal="12dp"
+                android:contentDescription="Vertical thick brightness warning control"
+                app:thickVertical="true" app:thickIcon="@drawable/brightness"
+                app:thickValue="85" app:thickWarningValue="75"
+                app:thickShowNumber="true" />
         </dev.oneuiproject.oneui.widget.RoundLinearLayout>
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

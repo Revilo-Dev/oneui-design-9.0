@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="oui_scroll_edge_fades" type="id" />
+    <item name="oui_scroll_edge_fades_disabled" type="id" />
+    <item name="oui_full_bleed_padding_applied" type="id" />
     <item name="drawer_custom_translation" type="id" />
 </resources>

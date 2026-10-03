@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.util.SeslMisc;
 import androidx.preference.DropDownPreference;
 import androidx.preference.EditTextPreference;
+import androidx.preference.EditTextPreferenceDialogFragmentCompat;
 import androidx.preference.ListPreference;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
@@ -25,6 +26,8 @@ import dev.oneuiproject.oneui.preference.TipsCardPreference;
 import dev.oneuiproject.oneui.preference.internal.PreferenceRelatedCard;
 import dev.oneuiproject.oneui.utils.PreferenceUtils;
 import dev.oneuiproject.oneui.widget.Toast;
+import dev.oneuiproject.oneui.widget.MaterialColorSettings;
+import dev.oneuiproject.oneui.widget.DialogBlur;
 import dev.oneuiproject.oneuiexample.base.FragmentInfo;
 import dev.oneuiproject.oneuiexample.utils.DarkModeUtils;
 
@@ -43,6 +46,40 @@ public class PreferencesFragment extends PreferenceFragmentCompat
     @Override
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
         setPreferencesFromResource(R.xml.sample3_preferences, rootKey);
+    }
+
+    @Override public void onDisplayPreferenceDialog(Preference preference) {
+        if (!(preference instanceof EditTextPreference)) {
+            super.onDisplayPreferenceDialog(preference);
+            return;
+        }
+        String tag = "glass_edit_text_preference";
+        if (getParentFragmentManager().findFragmentByTag(tag) != null) return;
+        GlassEditTextDialog dialog = GlassEditTextDialog.newInstance(preference.getKey());
+        dialog.setTargetFragment(this, 0);
+        dialog.show(getParentFragmentManager(), tag);
+    }
+
+    public static class GlassEditTextDialog extends EditTextPreferenceDialogFragmentCompat {
+        public static GlassEditTextDialog newInstance(String key) {
+            GlassEditTextDialog dialog = new GlassEditTextDialog();
+            Bundle args = new Bundle(1);
+            args.putString("key", key);
+            dialog.setArguments(args);
+            return dialog;
+        }
+
+        @Override public void onStart() {
+            super.onStart();
+            if (getDialog() == null || getDialog().getWindow() == null) return;
+            getDialog().getWindow().setBackgroundDrawableResource(R.drawable.oui_dialog_glass);
+            DialogBlur.apply(getDialog());
+        }
+
+        @Override public void onStop() {
+            DialogBlur.release(getDialog());
+            super.onStop();
+        }
     }
 
     @Override
@@ -101,6 +138,10 @@ public class PreferencesFragment extends PreferenceFragmentCompat
         autoDarkModePref.setOnPreferenceChangeListener(this);
         autoDarkModePref.setChecked(darkMode == DarkModeUtils.DARK_MODE_AUTO);
 
+        SwitchPreferenceCompat materialColors = findPreference(MaterialColorSettings.KEY);
+        materialColors.setOnPreferenceChangeListener(this);
+        materialColors.setEnabled(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S);
+
         SeslSwitchPreferenceScreen key2 = findPreference("key2");
         boolean enabled = key2.isChecked();
         key2.setSummary(enabled ? "Enabled" : "Disabled");
@@ -133,6 +174,10 @@ public class PreferencesFragment extends PreferenceFragmentCompat
         HorizontalRadioPreference darkModePref = (HorizontalRadioPreference) findPreference("dark_mode");
 
         switch (preference.getKey()) {
+            case MaterialColorSettings.KEY:
+                // Preference persistence finishes before the posted recreation reads the new value.
+                requireActivity().getWindow().getDecorView().post(() -> requireActivity().recreate());
+                return true;
             case "dark_mode":
                 if (currentDarkMode != newValue) {
                     DarkModeUtils.setDarkMode((AppCompatActivity) requireActivity(), ((String) newValue).equals("0")
